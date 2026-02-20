@@ -22,6 +22,8 @@ export {
   requirePermissions,
   SessionManager,
   createAuth0TokenExchanger,
+  createMfaEnforcementMiddleware,
+  parseMfaErrorResponse,
 } from './auth/index.js';
 export type {
   JwksGetter,

@@ -17,27 +17,31 @@ sentinel/
 │   │   └── src/
 │   │       ├── index.ts          # Public API: version constants, CheckResult, auth types/config/errors/session
 │   │       ├── auth/
-│   │       │   ├── types.ts      # AuthConfig, AuthUser, TokenPayload, AuthResult, AuthError interfaces
+│   │       │   ├── types.ts      # AuthConfig, AuthUser, TokenPayload (incl. amr), AuthResult, AuthError
 │   │       │   ├── config.ts     # loadAuthConfig() — reads Auth0 env vars, throws on missing
 │   │       │   ├── errors.ts     # unauthorizedError, forbiddenError, authConfigError factories
 │   │       │   ├── session.ts    # SessionConfig, TokenSet, TokenRefreshResult, WorkerTokenRequest, WorkerToken
+│   │       │   ├── mfa.ts        # MFA_ERROR_CODES, MfaErrorCode, MfaError, MfaChallengeResult, isMfaError, createMfaError
 │   │       │   └── index.ts      # Barrel re-export for auth/
 │   │       └── __tests__/
 │   │           ├── index.test.ts # Unit tests for shared exports
-│   │           └── auth.test.ts  # Unit tests for auth config loading and error factories
+│   │           ├── auth.test.ts  # Unit tests for auth config loading and error factories
+│   │           └── mfa.test.ts   # Unit tests for MFA error types and helpers
 │   ├── core/             # @sentinel/core — domain models and core business logic
 │   │   └── src/
 │   │       ├── index.ts          # Public API: Scenario interface, auth modules, re-exports from shared
 │   │       ├── auth/
-│   │       │   ├── jwt.ts        # verifyAccessToken(), createAuth0JwksGetter(), JwksGetter type
+│   │       │   ├── jwt.ts        # verifyAccessToken() (extracts amr claim), createAuth0JwksGetter(), JwksGetter type
 │   │       │   ├── middleware.ts  # createAuthMiddleware(), requirePermissions() — framework-agnostic
+│   │       │   ├── mfa.ts        # createMfaEnforcementMiddleware(), parseMfaErrorResponse()
 │   │       │   ├── user.ts       # tokenPayloadToUser() — maps TokenPayload to AuthUser
 │   │       │   ├── session.ts    # SessionManager class, createAuth0TokenExchanger(), TokenExchanger type
 │   │       │   └── index.ts      # Barrel re-export for auth/
 │   │       └── __tests__/
 │   │           ├── index.test.ts  # Unit tests for core exports
 │   │           ├── auth.test.ts   # Unit tests for JWT verification and auth middleware
-│   │           └── session.test.ts # Unit tests for SessionManager (createTokenSet, refresh, needsRefresh, etc.)
+│   │           ├── session.test.ts # Unit tests for SessionManager (createTokenSet, refresh, needsRefresh, etc.)
+│   │           └── mfa.test.ts   # Unit tests for MFA enforcement middleware and response parsing
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared
@@ -48,6 +52,8 @@ sentinel/
 │           ├── index.ts          # Public API: APP_TITLE, re-exports from core/shared
 │           └── __tests__/
 │               └── index.test.ts # Unit tests for web exports
+├── docs/
+│   └── auth0-mfa-setup.md  # Auth0 MFA configuration guide and Sentinel error-handling reference
 ├── Dockerfile            # Multi-stage build: base → deps → build → api → web
 ├── docker-compose.yml    # Full local stack: api, web, browser-worker, redis, postgres
 ├── .dockerignore         # Excludes node_modules, dist, .git, .env, .claude, coverage

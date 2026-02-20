@@ -56,25 +56,21 @@ export async function verifyAccessToken(
     ? (rawPermissions as string[])
     : undefined;
 
-  const result: TokenPayload =
-    permissions !== undefined
-      ? {
-          sub,
-          email: typeof email === 'string' ? email : '',
-          iss,
-          aud,
-          exp,
-          iat,
-          permissions,
-        }
-      : {
-          sub,
-          email: typeof email === 'string' ? email : '',
-          iss,
-          aud,
-          exp,
-          iat,
-        };
+  const rawAmr = payload['amr'];
+  const amr: readonly string[] | undefined = Array.isArray(rawAmr)
+    ? (rawAmr as string[])
+    : undefined;
+
+  const result: TokenPayload = {
+    sub,
+    email: typeof email === 'string' ? email : '',
+    iss,
+    aud,
+    exp,
+    iat,
+    ...(permissions !== undefined ? { permissions } : {}),
+    ...(amr !== undefined ? { amr } : {}),
+  };
 
   return result;
 }

@@ -8,3 +8,5 @@ export type {
   WorkerTokenRequest,
   WorkerToken,
 } from './session.js';
+export { MFA_ERROR_CODES, isMfaError, createMfaError } from './mfa.js';
+export type { MfaErrorCode, MfaError, MfaChallengeResult } from './mfa.js';

@@ -12,11 +12,15 @@ export type SentinelVersion = typeof SENTINEL_VERSION;
 export type CheckResult = { status: 'pass' } | { status: 'fail'; reason: string };
 
 export type { AuthConfig, AuthUser, TokenPayload, AuthResult, AuthError } from './auth/index.js';
+export type { MfaErrorCode, MfaError, MfaChallengeResult } from './auth/index.js';
 export {
   loadAuthConfig,
   unauthorizedError,
   forbiddenError,
   authConfigError,
+  MFA_ERROR_CODES,
+  isMfaError,
+  createMfaError,
 } from './auth/index.js';
 export type {
   SessionConfig,
