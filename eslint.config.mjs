@@ -12,7 +12,7 @@ export default [
     languageOptions: {
       parser: tsparser,
       parserOptions: {
-        project: true,
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },

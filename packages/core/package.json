@@ -19,7 +19,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@sentinel/shared": "workspace:*"
+    "@sentinel/shared": "workspace:*",
+    "jose": "^6.1.3"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
