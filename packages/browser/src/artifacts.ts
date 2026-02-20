@@ -39,8 +39,13 @@ export class ArtifactManager {
     files.sort((a, b) => a.mtimeMs - b.mtimeMs);
     for (const file of files) {
       if (totalBytes <= maxBytes) break;
-      await unlink(file.path);
-      totalBytes -= file.size;
+      try {
+        await unlink(file.path);
+        totalBytes -= file.size;
+      } catch {
+        // File may have been removed between collection and deletion;
+        // skip and continue pruning remaining files.
+      }
     }
   }
 

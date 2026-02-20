@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto';
+import { randomBytes } from 'node:crypto';
 import type {
   BrowserType as PlaywrightBrowserType,
   Browser,
@@ -18,6 +18,7 @@ import type {
   WaitOptions,
   ScreenshotOptions,
   VideoOptions,
+  RequestAction,
   RequestInterceptor,
   ResponseInterceptor,
   HarArchive,
@@ -54,6 +55,7 @@ export class PlaywrightBrowserEngine implements BrowserEngine {
   private readonly networkLogs = new Map<string, NetworkLog>();
   private readonly requestInterceptors = new Map<string, RequestInterceptor>();
   private readonly responseInterceptors = new Map<string, ResponseInterceptor>();
+  private readonly responseListeners = new Map<string, (...args: unknown[]) => void>();
 
   constructor(options?: PlaywrightEngineOptions) {
     this.launchFn = options?.launchFn;
@@ -118,6 +120,12 @@ export class PlaywrightBrowserEngine implements BrowserEngine {
     }
     await this.browser.close();
     this.browser = undefined;
+    this.contexts.clear();
+    this.pages.clear();
+    this.networkLogs.clear();
+    this.requestInterceptors.clear();
+    this.responseInterceptors.clear();
+    this.responseListeners.clear();
   }
 
   // ---------------------------------------------------------------------------
@@ -164,11 +172,21 @@ export class PlaywrightBrowserEngine implements BrowserEngine {
 
   async closeContext(contextHandle: BrowserContextHandle): Promise<void> {
     const context = this.requireContext(contextHandle);
+
+    // Remove all pages that belong to this context to prevent handle leaks.
+    const contextPages = new Set(context.pages());
+    for (const [handle, page] of this.pages) {
+      if (contextPages.has(page)) {
+        this.pages.delete(handle);
+      }
+    }
+
     await context.close();
     this.contexts.delete(contextHandle);
     this.networkLogs.delete(contextHandle);
     this.requestInterceptors.delete(contextHandle);
     this.responseInterceptors.delete(contextHandle);
+    this.responseListeners.delete(contextHandle);
   }
 
   // ---------------------------------------------------------------------------
@@ -225,13 +243,26 @@ export class PlaywrightBrowserEngine implements BrowserEngine {
     options?: TypeOptions,
   ): Promise<void> {
     const page = this.requirePage(pageHandle);
-    // fill() is preferred over type() for reliability; it clears and sets the value atomically.
+    if (options?.delay !== undefined) {
+      // Use page.type() when delay is requested — fill() does not support character-by-character timing.
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      await page.type(selector, text, {
+        ...(options.timeout !== undefined && { timeout: options.timeout }),
+        delay: options.delay,
+      });
+      return;
+    }
+    // fill() is preferred for reliability; it clears and sets the value atomically.
     await page.fill(selector, text, {
       ...(options?.timeout !== undefined && { timeout: options.timeout }),
     });
   }
 
-  async selectOption(pageHandle: PageHandle, selector: string, values: string[]): Promise<void> {
+  async selectOption(
+    pageHandle: PageHandle,
+    selector: string,
+    values: readonly string[],
+  ): Promise<void> {
     const page = this.requirePage(pageHandle);
     await page.selectOption(selector, values);
   }
@@ -321,7 +352,15 @@ export class PlaywrightBrowserEngine implements BrowserEngine {
         return;
       }
 
-      const action = await interceptor(request);
+      let action: RequestAction;
+      try {
+        action = await interceptor(request);
+      } catch {
+        // If the user's interceptor throws, continue the request to avoid
+        // hanging the browser on an unresolved route.
+        await route.continue();
+        return;
+      }
 
       if (action.action === 'abort') {
         await route.abort(action.reason);
@@ -339,7 +378,7 @@ export class PlaywrightBrowserEngine implements BrowserEngine {
       }
 
       // action === 'continue' — may carry overrides
-      if ('overrides' in action) {
+      if (action.overrides !== undefined) {
         const continueOptions: Parameters<typeof route.continue>[0] = {};
         if (action.overrides.url !== undefined) continueOptions.url = action.overrides.url;
         if (action.overrides.method !== undefined) continueOptions.method = action.overrides.method;
@@ -362,19 +401,36 @@ export class PlaywrightBrowserEngine implements BrowserEngine {
     this.responseInterceptors.set(contextHandle, handler);
     const context = this.requireContext(contextHandle);
 
-    context.on('response', (playwrightResponse) => {
+    // Remove any previously registered response listener to prevent accumulation.
+    const existingListener = this.responseListeners.get(contextHandle);
+    if (existingListener !== undefined) {
+      context.off('response', existingListener);
+    }
+
+    const listener = (...args: unknown[]): void => {
+      const playwrightResponse = args[0] as {
+        request(): {
+          url(): string;
+          method(): string;
+          headers(): Record<string, string>;
+          resourceType(): string;
+        };
+        url(): string;
+        status(): number;
+        headers(): Record<string, string>;
+      };
       const playwrightRequest = playwrightResponse.request();
       const request: NetworkRequest = {
         url: playwrightRequest.url(),
         method: playwrightRequest.method(),
-        headers: playwrightRequest.headers() as Record<string, string>,
+        headers: playwrightRequest.headers(),
         resourceType: playwrightRequest.resourceType(),
       };
 
       const response: NetworkResponse = {
         url: playwrightResponse.url(),
         status: playwrightResponse.status(),
-        headers: playwrightResponse.headers() as Record<string, string>,
+        headers: playwrightResponse.headers(),
       };
 
       const log = this.networkLogs.get(contextHandle);
@@ -387,14 +443,27 @@ export class PlaywrightBrowserEngine implements BrowserEngine {
       const responseInterceptor = this.responseInterceptors.get(contextHandle);
       if (responseInterceptor === undefined) return;
 
-      void responseInterceptor(request, response);
-    });
+      responseInterceptor(request, response).catch(() => {
+        // Response interceptors are observe-only; swallowing errors here
+        // prevents unhandled rejections from crashing the event loop.
+      });
+    };
+
+    this.responseListeners.set(contextHandle, listener);
+    context.on('response', listener);
   }
 
   async removeInterceptors(contextHandle: BrowserContextHandle): Promise<void> {
     const context = this.requireContext(contextHandle);
     this.requestInterceptors.delete(contextHandle);
     this.responseInterceptors.delete(contextHandle);
+
+    const listener = this.responseListeners.get(contextHandle);
+    if (listener !== undefined) {
+      context.off('response', listener);
+      this.responseListeners.delete(contextHandle);
+    }
+
     await context.unrouteAll();
   }
 

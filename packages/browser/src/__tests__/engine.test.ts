@@ -33,6 +33,7 @@ interface MockPage {
   urlFn: ReturnType<typeof vi.fn>;
   clickFn: ReturnType<typeof vi.fn>;
   fillFn: ReturnType<typeof vi.fn>;
+  typeFn: ReturnType<typeof vi.fn>;
   selectOptionFn: ReturnType<typeof vi.fn>;
   waitForSelectorFn: ReturnType<typeof vi.fn>;
   evaluateFn: ReturnType<typeof vi.fn>;
@@ -49,6 +50,7 @@ function makeMockPage(url = 'https://example.com'): MockPage {
   const urlFn = vi.fn().mockReturnValue(url);
   const clickFn = vi.fn().mockResolvedValue(undefined);
   const fillFn = vi.fn().mockResolvedValue(undefined);
+  const typeFn = vi.fn().mockResolvedValue(undefined);
   const selectOptionFn = vi.fn().mockResolvedValue([]);
   const waitForSelectorFn = vi.fn().mockResolvedValue(null);
   const evaluateFn = vi.fn().mockResolvedValue(42);
@@ -64,6 +66,7 @@ function makeMockPage(url = 'https://example.com'): MockPage {
     url: urlFn,
     click: clickFn,
     fill: fillFn,
+    type: typeFn,
     selectOption: selectOptionFn,
     waitForSelector: waitForSelectorFn,
     evaluate: evaluateFn,
@@ -81,6 +84,7 @@ function makeMockPage(url = 'https://example.com'): MockPage {
     urlFn,
     clickFn,
     fillFn,
+    typeFn,
     selectOptionFn,
     waitForSelectorFn,
     evaluateFn,
@@ -97,6 +101,7 @@ interface MockContext {
   routeFn: ReturnType<typeof vi.fn>;
   unrouteAllFn: ReturnType<typeof vi.fn>;
   onFn: ReturnType<typeof vi.fn>;
+  offFn: ReturnType<typeof vi.fn>;
   pagesFn: ReturnType<typeof vi.fn>;
 }
 
@@ -106,6 +111,7 @@ function makeMockContext(page: Page): MockContext {
   const routeFn = vi.fn().mockResolvedValue(undefined);
   const unrouteAllFn = vi.fn().mockResolvedValue(undefined);
   const onFn = vi.fn();
+  const offFn = vi.fn();
   const pagesFn = vi.fn().mockReturnValue([page]);
 
   const context: BrowserContext = {
@@ -114,10 +120,11 @@ function makeMockContext(page: Page): MockContext {
     route: routeFn,
     unrouteAll: unrouteAllFn,
     on: onFn,
+    off: offFn,
     pages: pagesFn,
   } as unknown as BrowserContext;
 
-  return { context, newPageFn, closeFn, routeFn, unrouteAllFn, onFn, pagesFn };
+  return { context, newPageFn, closeFn, routeFn, unrouteAllFn, onFn, offFn, pagesFn };
 }
 
 interface MockBrowser {
@@ -452,6 +459,18 @@ describe('PlaywrightBrowserEngine', () => {
       expect(mockPage.fillFn).toHaveBeenCalledWith('#input', 'hello', { timeout: 2000 });
     });
 
+    it('type uses page.type() when delay is specified', async () => {
+      const { engine, mockPage, pageHandle } = await engineWithPage();
+
+      await engine.type(pageHandle, '#input', 'hello', { delay: 50, timeout: 2000 });
+
+      expect(mockPage.typeFn).toHaveBeenCalledWith('#input', 'hello', {
+        delay: 50,
+        timeout: 2000,
+      });
+      expect(mockPage.fillFn).not.toHaveBeenCalled();
+    });
+
     it('selectOption delegates to page.selectOption', async () => {
       const { engine, mockPage, pageHandle } = await engineWithPage();
 
@@ -545,6 +564,241 @@ describe('PlaywrightBrowserEngine', () => {
       expect(mockContext.routeFn).toHaveBeenCalledOnce();
     });
 
+    it('onRequest route callback calls continue for action: continue', async () => {
+      const { engine, mockContext, contextHandle } = await engineWithPage();
+      const handler = vi.fn().mockResolvedValue({ action: 'continue' as const });
+
+      await engine.onRequest(contextHandle, handler);
+
+      // Extract the route callback registered with context.route
+      const routeCallback = mockContext.routeFn.mock.calls[0]?.[1] as (
+        route: unknown,
+      ) => Promise<void>;
+
+      const continueFn = vi.fn().mockResolvedValue(undefined);
+      const mockRoute = {
+        request: () => ({
+          url: () => 'https://example.com',
+          method: () => 'GET',
+          headers: () => ({ 'content-type': 'text/html' }),
+          resourceType: () => 'document',
+        }),
+        continue: continueFn,
+        abort: vi.fn(),
+        fulfill: vi.fn(),
+      };
+
+      await routeCallback(mockRoute);
+
+      expect(handler).toHaveBeenCalledOnce();
+      expect(continueFn).toHaveBeenCalledOnce();
+    });
+
+    it('onRequest route callback calls abort for action: abort', async () => {
+      const { engine, mockContext, contextHandle } = await engineWithPage();
+      const handler = vi.fn().mockResolvedValue({ action: 'abort' as const, reason: 'blocked' });
+
+      await engine.onRequest(contextHandle, handler);
+
+      const routeCallback = mockContext.routeFn.mock.calls[0]?.[1] as (
+        route: unknown,
+      ) => Promise<void>;
+
+      const abortFn = vi.fn().mockResolvedValue(undefined);
+      const mockRoute = {
+        request: () => ({
+          url: () => 'https://example.com/ad',
+          method: () => 'GET',
+          headers: () => ({}),
+          resourceType: () => 'script',
+        }),
+        continue: vi.fn(),
+        abort: abortFn,
+        fulfill: vi.fn(),
+      };
+
+      await routeCallback(mockRoute);
+
+      expect(abortFn).toHaveBeenCalledWith('blocked');
+    });
+
+    it('onRequest route callback calls fulfill for action: fulfill', async () => {
+      const { engine, mockContext, contextHandle } = await engineWithPage();
+      const handler = vi.fn().mockResolvedValue({
+        action: 'fulfill' as const,
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: '{"ok":true}',
+      });
+
+      await engine.onRequest(contextHandle, handler);
+
+      const routeCallback = mockContext.routeFn.mock.calls[0]?.[1] as (
+        route: unknown,
+      ) => Promise<void>;
+
+      const fulfillFn = vi.fn().mockResolvedValue(undefined);
+      const mockRoute = {
+        request: () => ({
+          url: () => 'https://api.example.com/data',
+          method: () => 'GET',
+          headers: () => ({}),
+          resourceType: () => 'fetch',
+        }),
+        continue: vi.fn(),
+        abort: vi.fn(),
+        fulfill: fulfillFn,
+      };
+
+      await routeCallback(mockRoute);
+
+      expect(fulfillFn).toHaveBeenCalledWith({
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+        body: '{"ok":true}',
+      });
+    });
+
+    it('onRequest route callback calls continue with overrides', async () => {
+      const { engine, mockContext, contextHandle } = await engineWithPage();
+      const handler = vi.fn().mockResolvedValue({
+        action: 'continue' as const,
+        overrides: { url: 'https://proxy.example.com', body: 'modified' },
+      });
+
+      await engine.onRequest(contextHandle, handler);
+
+      const routeCallback = mockContext.routeFn.mock.calls[0]?.[1] as (
+        route: unknown,
+      ) => Promise<void>;
+
+      const continueFn = vi.fn().mockResolvedValue(undefined);
+      const mockRoute = {
+        request: () => ({
+          url: () => 'https://original.example.com',
+          method: () => 'POST',
+          headers: () => ({}),
+          resourceType: () => 'fetch',
+        }),
+        continue: continueFn,
+        abort: vi.fn(),
+        fulfill: vi.fn(),
+      };
+
+      await routeCallback(mockRoute);
+
+      expect(continueFn).toHaveBeenCalledWith({
+        url: 'https://proxy.example.com',
+        postData: 'modified',
+      });
+    });
+
+    it('onRequest route callback continues when interceptor throws', async () => {
+      const { engine, mockContext, contextHandle } = await engineWithPage();
+      const handler = vi.fn().mockRejectedValue(new Error('interceptor error'));
+
+      await engine.onRequest(contextHandle, handler);
+
+      const routeCallback = mockContext.routeFn.mock.calls[0]?.[1] as (
+        route: unknown,
+      ) => Promise<void>;
+
+      const continueFn = vi.fn().mockResolvedValue(undefined);
+      const mockRoute = {
+        request: () => ({
+          url: () => 'https://example.com',
+          method: () => 'GET',
+          headers: () => ({}),
+          resourceType: () => 'document',
+        }),
+        continue: continueFn,
+        abort: vi.fn(),
+        fulfill: vi.fn(),
+      };
+
+      await routeCallback(mockRoute);
+
+      expect(continueFn).toHaveBeenCalledOnce();
+    });
+
+    it('onRequest calls unrouteAll when replacing a handler', async () => {
+      const { engine, mockContext, contextHandle } = await engineWithPage();
+      const handler1 = vi.fn().mockResolvedValue({ action: 'continue' as const });
+      const handler2 = vi.fn().mockResolvedValue({ action: 'continue' as const });
+
+      await engine.onRequest(contextHandle, handler1);
+      await engine.onRequest(contextHandle, handler2);
+
+      expect(mockContext.unrouteAllFn).toHaveBeenCalledOnce();
+      expect(mockContext.routeFn).toHaveBeenCalledTimes(2);
+    });
+
+    it('onResponse listener records to NetworkLog and invokes handler', async () => {
+      const { engine, mockContext, contextHandle } = await engineWithPage();
+      const handler = vi.fn().mockResolvedValue(undefined);
+
+      await engine.onResponse(contextHandle, handler);
+
+      // Extract the listener callback registered with context.on
+      const onCall = mockContext.onFn.mock.calls.find(
+        (call: unknown[]) => call[0] === 'response',
+      ) as [string, (...args: unknown[]) => void] | undefined;
+      expect(onCall).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guarded by expect above
+      const listenerCallback = onCall![1];
+
+      // Simulate a Playwright response event
+      const mockPlaywrightResponse = {
+        request: () => ({
+          url: () => 'https://api.example.com/data',
+          method: () => 'POST',
+          headers: () => ({ 'content-type': 'application/json' }),
+          resourceType: () => 'fetch',
+        }),
+        url: () => 'https://api.example.com/data',
+        status: () => 200,
+        headers: () => ({ 'content-type': 'application/json' }),
+      };
+
+      listenerCallback(mockPlaywrightResponse);
+
+      // Verify the interceptor was called with correctly shaped objects
+      expect(handler).toHaveBeenCalledOnce();
+      expect(handler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://api.example.com/data',
+          method: 'POST',
+          resourceType: 'fetch',
+        }),
+        expect.objectContaining({
+          url: 'https://api.example.com/data',
+          status: 200,
+        }),
+      );
+
+      // Verify HAR export captured the entry
+      const har = await engine.exportHar(contextHandle);
+      expect(har.log.entries).toHaveLength(1);
+      expect(har.log.entries[0]?.request.url).toBe('https://api.example.com/data');
+      expect(har.log.entries[0]?.response.status).toBe(200);
+    });
+
+    it('onResponse removes previous listener when replacing handler', async () => {
+      const { engine, mockContext, contextHandle } = await engineWithPage();
+      const handler1 = vi.fn().mockResolvedValue(undefined);
+      const handler2 = vi.fn().mockResolvedValue(undefined);
+
+      await engine.onResponse(contextHandle, handler1);
+      await engine.onResponse(contextHandle, handler2);
+
+      // First listener should have been removed via context.off
+      expect(mockContext.offFn).toHaveBeenCalledWith('response', expect.any(Function));
+      // Two on('response') calls total
+      expect(
+        mockContext.onFn.mock.calls.filter((call: unknown[]) => call[0] === 'response'),
+      ).toHaveLength(2);
+    });
+
     it('onResponse stores handler and calls context.on', async () => {
       const { engine, mockContext, contextHandle } = await engineWithPage();
       const handler = vi.fn().mockResolvedValue(undefined);
@@ -560,6 +814,16 @@ describe('PlaywrightBrowserEngine', () => {
       await engine.removeInterceptors(contextHandle);
 
       expect(mockContext.unrouteAllFn).toHaveBeenCalledOnce();
+    });
+
+    it('removeInterceptors removes response listener via context.off', async () => {
+      const { engine, mockContext, contextHandle } = await engineWithPage();
+      const handler = vi.fn().mockResolvedValue(undefined);
+
+      await engine.onResponse(contextHandle, handler);
+      await engine.removeInterceptors(contextHandle);
+
+      expect(mockContext.offFn).toHaveBeenCalledWith('response', expect.any(Function));
     });
 
     it('exportHar returns empty entries when no network log', async () => {
@@ -579,6 +843,29 @@ describe('PlaywrightBrowserEngine', () => {
       // exportHar uses the network log map, not requireContext — returns empty for missing key
       const har = await engine.exportHar(bad);
       expect(har.log.entries).toHaveLength(0);
+    });
+  });
+
+  describe('Resource cleanup', () => {
+    it('closeContext removes page handles belonging to that context', async () => {
+      const { engine, contextHandle, pageHandle } = await engineWithPage();
+
+      await engine.closeContext(contextHandle);
+
+      // The page handle should no longer be valid
+      await expect(engine.closePage(pageHandle)).rejects.toThrow(/No page found for handle/);
+    });
+
+    it('close clears all internal state', async () => {
+      const { engine, contextHandle, pageHandle } = await engineWithPage();
+
+      await engine.close();
+
+      // All handles should be invalid after close()
+      await expect(engine.closePage(pageHandle)).rejects.toThrow(/No page found for handle/);
+      await expect(engine.closeContext(contextHandle)).rejects.toThrow(
+        /No browser context found for handle/,
+      );
     });
   });
 

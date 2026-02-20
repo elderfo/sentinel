@@ -2,15 +2,15 @@ import type { BrowserType } from '@sentinel/shared';
 
 // ---------------------------------------------------------------------------
 // Branded handle types — opaque string IDs that keep the interface library-agnostic.
-// Implementations map these IDs to internal Playwright objects.
+// Implementations map these IDs to internal driver objects.
 // ---------------------------------------------------------------------------
 
 declare const __pageHandle: unique symbol;
-/** Opaque handle identifying a Playwright Page instance within the engine. */
+/** Opaque handle identifying a page instance within the browser engine. */
 export type PageHandle = string & { readonly [__pageHandle]: never };
 
 declare const __contextHandle: unique symbol;
-/** Opaque handle identifying a Playwright BrowserContext instance within the engine. */
+/** Opaque handle identifying a browser context instance within the engine. */
 export type BrowserContextHandle = string & { readonly [__contextHandle]: never };
 
 // ---------------------------------------------------------------------------
@@ -59,7 +59,7 @@ export interface ClickOptions {
   readonly force?: boolean;
 }
 
-/** Options for keyboard type interactions. */
+/** Options for text input interactions. */
 export interface TypeOptions {
   readonly timeout?: number;
   readonly delay?: number;
@@ -102,7 +102,7 @@ export interface VideoOptions {
 export interface NetworkRequest {
   readonly url: string;
   readonly method: string;
-  readonly headers: Record<string, string>;
+  readonly headers: Readonly<Record<string, string>>;
   readonly body?: string;
   readonly resourceType: string;
 }
@@ -111,7 +111,7 @@ export interface NetworkRequest {
 export interface NetworkResponse {
   readonly url: string;
   readonly status: number;
-  readonly headers: Record<string, string>;
+  readonly headers: Readonly<Record<string, string>>;
   readonly body?: string;
 }
 
@@ -120,10 +120,9 @@ export interface NetworkResponse {
  * handle the outgoing request.
  */
 export type RequestAction =
-  | { readonly action: 'continue' }
   | {
       readonly action: 'continue';
-      readonly overrides: Partial<Pick<NetworkRequest, 'url' | 'method' | 'headers' | 'body'>>;
+      readonly overrides?: Partial<Pick<NetworkRequest, 'url' | 'method' | 'headers' | 'body'>>;
     }
   | { readonly action: 'abort'; readonly reason?: string }
   | {
@@ -216,7 +215,7 @@ export interface BrowserEngine {
     text: string,
     options?: TypeOptions,
   ): Promise<void>;
-  selectOption(pageHandle: PageHandle, selector: string, values: string[]): Promise<void>;
+  selectOption(pageHandle: PageHandle, selector: string, values: readonly string[]): Promise<void>;
   waitForSelector(pageHandle: PageHandle, selector: string, options?: WaitOptions): Promise<void>;
   evaluate<T>(pageHandle: PageHandle, fn: string | (() => T)): Promise<T>;
 

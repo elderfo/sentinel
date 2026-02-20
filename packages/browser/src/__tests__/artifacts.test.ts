@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { rm, access } from 'node:fs/promises';
+import { rm, access, mkdir, writeFile } from 'node:fs/promises';
 import { ArtifactManager } from '../artifacts.js';
 import type { BrowserEngine, PageHandle } from '../types.js';
 import type { ArtifactConfig } from '@sentinel/shared';
@@ -176,5 +176,131 @@ describe('ArtifactManager.generateFilename', () => {
     const filename = manager.generateFilename('my/test:suite', 'step<1>', 'png');
     expect(filename).not.toMatch(/[/:<>]/);
     expect(filename).toMatch(/^[a-zA-Z0-9_-]+_[a-zA-Z0-9_-]+_\d+\.png$/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// enforceRetention
+// ---------------------------------------------------------------------------
+
+describe('ArtifactManager.enforceRetention', () => {
+  const testDirs: string[] = [];
+
+  afterEach(async () => {
+    for (const dir of testDirs) {
+      await rm(dir, { recursive: true, force: true });
+    }
+    testDirs.length = 0;
+  });
+
+  async function createFile(
+    dir: string,
+    name: string,
+    sizeBytes: number,
+    ageMsOffset = 0,
+  ): Promise<void> {
+    await mkdir(dir, { recursive: true });
+    const filePath = join(dir, name);
+    await writeFile(filePath, Buffer.alloc(sizeBytes, 'x'));
+    // Set mtime to a specific time so sorting is deterministic
+    const { utimes } = await import('node:fs/promises');
+    const mtime = new Date(Date.now() - ageMsOffset);
+    await utimes(filePath, mtime, mtime);
+  }
+
+  it('deletes oldest files when total exceeds maxRetentionMb', async () => {
+    const outDir = join(tmpdir(), `sentinel-retention-${String(Date.now())}`);
+    testDirs.push(outDir);
+    const screenshotDir = join(outDir, 'screenshots');
+
+    // maxRetentionMb = 1 means max 1MB (1048576 bytes)
+    // Create 3 files: 500KB each = 1.5MB total, exceeding the 1MB limit
+    const config: ArtifactConfig = {
+      screenshotOnFailure: true,
+      videoEnabled: false,
+      outputDir: outDir,
+      maxRetentionMb: 1,
+    };
+    const manager = new ArtifactManager(config);
+
+    // oldest file (created 3 seconds ago)
+    await createFile(screenshotDir, 'oldest.png', 500 * 1024, 3000);
+    // middle file (created 2 seconds ago)
+    await createFile(screenshotDir, 'middle.png', 500 * 1024, 2000);
+    // newest file (created 1 second ago)
+    await createFile(screenshotDir, 'newest.png', 500 * 1024, 1000);
+
+    await manager.enforceRetention();
+
+    // oldest should be deleted (500KB removed -> 1MB remaining, still under limit? No: 1.5MB - 500KB = 1MB which is equal, so should stop)
+    // Actually: totalBytes starts at 1536000 (1.5MB), maxBytes = 1048576 (1MB)
+    // Delete oldest: totalBytes = 1024000, still > 1048576? No: 1024000 < 1048576, so stop
+    // Wait, 500 * 1024 = 512000 each, total = 1536000, 1536000 - 512000 = 1024000, 1024000 < 1048576, so only oldest deleted
+    await expect(access(join(screenshotDir, 'oldest.png'))).rejects.toThrow();
+    await expect(access(join(screenshotDir, 'middle.png'))).resolves.toBeUndefined();
+    await expect(access(join(screenshotDir, 'newest.png'))).resolves.toBeUndefined();
+  });
+
+  it('does not delete files when under the retention limit', async () => {
+    const outDir = join(tmpdir(), `sentinel-retention-${String(Date.now())}`);
+    testDirs.push(outDir);
+    const screenshotDir = join(outDir, 'screenshots');
+
+    const config: ArtifactConfig = {
+      screenshotOnFailure: true,
+      videoEnabled: false,
+      outputDir: outDir,
+      maxRetentionMb: 100,
+    };
+    const manager = new ArtifactManager(config);
+
+    await createFile(screenshotDir, 'file1.png', 1024, 2000);
+    await createFile(screenshotDir, 'file2.png', 1024, 1000);
+
+    await manager.enforceRetention();
+
+    await expect(access(join(screenshotDir, 'file1.png'))).resolves.toBeUndefined();
+    await expect(access(join(screenshotDir, 'file2.png'))).resolves.toBeUndefined();
+  });
+
+  it('handles non-existent directories gracefully', async () => {
+    const outDir = join(tmpdir(), `sentinel-retention-${String(Date.now())}`);
+    testDirs.push(outDir);
+
+    const config: ArtifactConfig = {
+      screenshotOnFailure: true,
+      videoEnabled: false,
+      outputDir: outDir,
+      maxRetentionMb: 1,
+    };
+    const manager = new ArtifactManager(config);
+
+    // Should not throw when directories don't exist
+    await expect(manager.enforceRetention()).resolves.toBeUndefined();
+  });
+
+  it('prunes across both screenshots and videos directories', async () => {
+    const outDir = join(tmpdir(), `sentinel-retention-${String(Date.now())}`);
+    testDirs.push(outDir);
+    const screenshotDir = join(outDir, 'screenshots');
+    const videoDir = join(outDir, 'videos');
+
+    const config: ArtifactConfig = {
+      screenshotOnFailure: true,
+      videoEnabled: true,
+      outputDir: outDir,
+      maxRetentionMb: 1,
+    };
+    const manager = new ArtifactManager(config);
+
+    // Oldest file in videos, newer file in screenshots
+    await createFile(videoDir, 'old-video.webm', 600 * 1024, 3000);
+    await createFile(screenshotDir, 'new-screenshot.png', 600 * 1024, 1000);
+
+    // Total: 1.2MB, limit: 1MB — oldest (old-video.webm) should be deleted
+    await manager.enforceRetention();
+
+    await expect(access(join(videoDir, 'old-video.webm'))).rejects.toThrow();
+    await expect(access(join(screenshotDir, 'new-screenshot.png'))).resolves.toBeUndefined();
   });
 });
