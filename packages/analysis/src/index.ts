@@ -26,6 +26,9 @@ export type {
   AttributeChange,
   ElementModification,
   DomDiff,
+  VisualRegion,
+  VisualRegionSource,
+  VisualDetectionResult,
 } from './types.js';
 
 export { parseDom, extractDom } from './parser/index.js';
@@ -47,3 +50,10 @@ export {
 } from './accessibility/index.js';
 
 export { detectForms, extractConstraints } from './forms/index.js';
+
+export {
+  detectVisualElements,
+  type VisualRecognizer,
+  NoOpVisualRecognizer,
+  extractVisualElements,
+} from './visual/index.js';
