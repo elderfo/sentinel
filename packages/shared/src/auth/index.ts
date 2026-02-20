@@ -10,3 +10,13 @@ export type {
 } from './session.js';
 export { MFA_ERROR_CODES, isMfaError, createMfaError } from './mfa.js';
 export type { MfaErrorCode, MfaError, MfaChallengeResult } from './mfa.js';
+export {
+  ROLES,
+  PERMISSIONS,
+  ROLE_PERMISSIONS,
+  hasPermission,
+  hasAllPermissions,
+  hasAnyPermission,
+  hasRole,
+} from './rbac.js';
+export type { Role, Permission } from './rbac.js';

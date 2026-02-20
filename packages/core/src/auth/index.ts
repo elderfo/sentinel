@@ -11,3 +11,4 @@ export type {
 export { SessionManager, createAuth0TokenExchanger } from './session.js';
 export type { TokenExchanger } from './session.js';
 export { createMfaEnforcementMiddleware, parseMfaErrorResponse } from './mfa.js';
+export { requireRole, requirePermission, createRbacMiddleware } from './rbac.js';

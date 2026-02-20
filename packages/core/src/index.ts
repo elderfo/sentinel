@@ -24,6 +24,9 @@ export {
   createAuth0TokenExchanger,
   createMfaEnforcementMiddleware,
   parseMfaErrorResponse,
+  requireRole,
+  requirePermission,
+  createRbacMiddleware,
 } from './auth/index.js';
 export type {
   JwksGetter,
