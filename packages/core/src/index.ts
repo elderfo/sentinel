@@ -4,8 +4,8 @@
  * Core domain logic for the Sentinel QA automation platform.
  */
 
-export type { CheckResult, SentinelVersion } from "@sentinel/shared";
-export { SENTINEL_VERSION } from "@sentinel/shared";
+export type { CheckResult, SentinelVersion } from '@sentinel/shared';
+export { SENTINEL_VERSION } from '@sentinel/shared';
 
 /** Represents a single automated QA scenario to be executed by Sentinel. */
 export interface Scenario {

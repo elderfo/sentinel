@@ -1,7 +1,7 @@
 name: User Story
 description: Describe a feature from the user's perspective
-title: "Story: As a [role], I want [feature] so that [benefit]"
-labels: ["user-story"]
+title: 'Story: As a [role], I want [feature] so that [benefit]'
+labels: ['user-story']
 body:
   - type: markdown
     attributes:

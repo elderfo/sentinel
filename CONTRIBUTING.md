@@ -119,7 +119,6 @@ common configuration issues.
    ```
 
 2. **Make your changes:**
-
    - Implement your feature or fix
    - Write or update tests as needed
    - Update documentation
@@ -146,7 +145,6 @@ common configuration issues.
    ```
 
 6. **Open a Pull Request:**
-
    - Use the provided PR template
    - Link related issues using `Closes #<number>`
    - Provide clear description of changes
