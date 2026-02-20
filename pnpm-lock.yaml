@@ -100,6 +100,25 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
 
+  packages/discovery:
+    dependencies:
+      '@sentinel/analysis':
+        specifier: workspace:*
+        version: link:../analysis
+      '@sentinel/browser':
+        specifier: workspace:*
+        version: link:../browser
+      '@sentinel/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.11
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
   packages/shared:
     devDependencies:
       '@types/node':

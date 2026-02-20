@@ -12,6 +12,7 @@ export default defineConfig({
       '@sentinel/web': resolve(root, 'packages/web/src/index.ts'),
       '@sentinel/browser': resolve(root, 'packages/browser/src/index.ts'),
       '@sentinel/analysis': resolve(root, 'packages/analysis/src/index.ts'),
+      '@sentinel/discovery': resolve(root, 'packages/discovery/src/index.ts'),
     },
   },
   test: {
@@ -68,6 +69,13 @@ export default defineConfig({
         test: {
           name: '@sentinel/analysis',
           include: ['packages/analysis/src/**/*.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: '@sentinel/discovery',
+          include: ['packages/discovery/src/**/*.test.ts'],
         },
       },
     ],
