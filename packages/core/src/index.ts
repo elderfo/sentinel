@@ -36,3 +36,5 @@ export type {
   PermissionMiddlewareFn,
   TokenExchanger,
 } from './auth/index.js';
+export { CredentialVault, InMemoryCredentialStore, loadVaultConfig } from './vault/index.js';
+export type { CredentialStore } from './vault/index.js';
