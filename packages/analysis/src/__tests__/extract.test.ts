@@ -74,10 +74,9 @@ describe('extractVisualElements', () => {
     isVisible: true,
   };
 
-  it('extracts DOM, detects visual elements, and calls recognizer', async () => {
-    const screenshot = Buffer.from('fake-screenshot');
+  it('skips screenshot when using NoOpVisualRecognizer', async () => {
     const evaluateFn = vi.fn().mockResolvedValue(canvasDom);
-    const screenshotFn = vi.fn().mockResolvedValue(screenshot);
+    const screenshotFn = vi.fn();
     const engine = {
       evaluate: evaluateFn,
       screenshot: screenshotFn,
@@ -87,7 +86,7 @@ describe('extractVisualElements', () => {
 
     expect(result.canvasElements).toHaveLength(1);
     expect(result.visualRegions.length).toBeGreaterThanOrEqual(1);
-    expect(screenshotFn).toHaveBeenCalledOnce();
+    expect(screenshotFn).not.toHaveBeenCalled();
   });
 
   it('filters recognized regions that overlap interactive elements from unmatchedRegions', async () => {

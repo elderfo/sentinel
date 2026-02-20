@@ -10,6 +10,7 @@ import { detectVisualElements } from './visual-detector.js';
 import type { VisualRecognizer } from './visual-recognizer.js';
 import { NoOpVisualRecognizer } from './visual-recognizer.js';
 
+// Duplicated from visual-detector.ts to keep this adapter independent of the pure DOM analysis layer.
 function boundingBoxesOverlap(a: BoundingBox, b: BoundingBox): boolean {
   return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 }
@@ -33,12 +34,21 @@ export async function extractVisualElements(
   interactiveElements: readonly InteractiveElement[],
   recognizer: VisualRecognizer = new NoOpVisualRecognizer(),
 ): Promise<VisualDetectionResult> {
-  const [domRoot, screenshot] = await Promise.all([
-    extractDom(engine, page),
-    engine.screenshot(page, { fullPage: true }),
-  ]);
+  const useRecognizer = !(recognizer instanceof NoOpVisualRecognizer);
+
+  const domPromise = extractDom(engine, page);
+  const screenshotPromise = useRecognizer
+    ? engine.screenshot(page, { fullPage: true })
+    : Promise.resolve(Buffer.alloc(0));
+
+  const [domRoot, screenshot] = await Promise.all([domPromise, screenshotPromise]);
 
   const domResult = detectVisualElements(domRoot, interactiveElements);
+
+  if (!useRecognizer) {
+    return domResult;
+  }
+
   const recognizedRegions = await recognizer.recognize(screenshot);
   const unmatchedRecognized = filterUnmatchedRegions(recognizedRegions, interactiveElements);
 
