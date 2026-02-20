@@ -78,6 +78,44 @@ sentinel/
 │   │           ├── engine.test.ts    # Unit tests for PlaywrightBrowserEngine (mocked)
 │   │           ├── artifacts.test.ts # Unit tests for ArtifactManager
 │   │           └── network.test.ts   # Unit tests for NetworkLog
+│   ├── analysis/         # @sentinel/analysis — DOM analysis engine (depends on shared + browser)
+│   │   └── src/
+│   │       ├── index.ts          # Public API: types, parser, classifier, diff, state, a11y, forms, extract adapters
+│   │       ├── types.ts          # All analysis domain types: DomNode, InteractiveElement, FormModel, PageState, DomDiff, etc.
+│   │       ├── parser/
+│   │       │   ├── dom-parser.ts # parseDom() — pure: RawDomData → DomNode tree with xpath/css selectors
+│   │       │   ├── extract.ts    # extractDom() — BrowserEngine adapter: evaluate() → parseDom()
+│   │       │   └── index.ts      # Barrel re-export for parser/
+│   │       ├── classifier/
+│   │       │   ├── element-classifier.ts  # classifyInteractiveElements() — pure: DomNode → InteractiveElement[]
+│   │       │   ├── rules.ts               # categorizeByRole(), categorizeByTag() — classification rule maps
+│   │       │   └── index.ts               # Barrel re-export for classifier/
+│   │       ├── accessibility/
+│   │       │   ├── accessibility-analyzer.ts  # parseAccessibilityTree(), findAccessibilityIssues()
+│   │       │   ├── merge.ts                   # mergeAccessibility() — attaches a11y info to InteractiveElements
+│   │       │   ├── extract.ts                 # extractAccessibilityTree() — BrowserEngine adapter
+│   │       │   └── index.ts                   # Barrel re-export for accessibility/
+│   │       ├── forms/
+│   │       │   ├── form-detector.ts   # detectForms() — pure: DomNode → FormModel[]
+│   │       │   ├── constraints.ts     # extractConstraints() — validation attribute extraction
+│   │       │   └── index.ts           # Barrel re-export for forms/
+│   │       ├── diff/
+│   │       │   ├── dom-differ.ts      # diffDom() — pure: two DomNode trees → DomDiff
+│   │       │   └── index.ts           # Barrel re-export for diff/
+│   │       ├── state/
+│   │       │   ├── state-tracker.ts   # StateTracker class — accumulates state transitions
+│   │       │   ├── state-hasher.ts    # hashDomContent() — SHA-256 hash of visible DOM structure
+│   │       │   ├── transition-graph.ts # exportGraphJson() — JSON serialization of state graph
+│   │       │   └── index.ts           # Barrel re-export for state/
+│   │       └── __tests__/
+│   │           ├── types.test.ts                  # Type structural tests
+│   │           ├── dom-parser.test.ts             # DOM parser unit tests
+│   │           ├── element-classifier.test.ts     # Element classifier unit tests
+│   │           ├── accessibility-analyzer.test.ts # Accessibility analyzer unit tests
+│   │           ├── form-detector.test.ts          # Form detector unit tests
+│   │           ├── dom-differ.test.ts             # DOM differ unit tests
+│   │           ├── state-tracker.test.ts          # State tracker unit tests
+│   │           └── extract.test.ts                # Browser extract adapter unit tests
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared

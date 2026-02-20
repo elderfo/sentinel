@@ -11,6 +11,7 @@ export default defineConfig({
       '@sentinel/cli': resolve(root, 'packages/cli/src/index.ts'),
       '@sentinel/web': resolve(root, 'packages/web/src/index.ts'),
       '@sentinel/browser': resolve(root, 'packages/browser/src/index.ts'),
+      '@sentinel/analysis': resolve(root, 'packages/analysis/src/index.ts'),
     },
   },
   test: {
@@ -60,6 +61,13 @@ export default defineConfig({
         test: {
           name: '@sentinel/browser',
           include: ['packages/browser/src/**/*.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: '@sentinel/analysis',
+          include: ['packages/analysis/src/**/*.test.ts'],
         },
       },
     ],
