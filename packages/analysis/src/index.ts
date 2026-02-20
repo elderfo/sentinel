@@ -35,3 +35,11 @@ export {
   categorizeByRole,
   categorizeByTag,
 } from './classifier/index.js';
+
+export {
+  parseAccessibilityTree,
+  mergeAccessibility,
+  findAccessibilityIssues,
+} from './accessibility/index.js';
+
+export { detectForms, extractConstraints } from './forms/index.js';
