@@ -15,7 +15,7 @@ sentinel/
 ├── packages/
 │   ├── shared/           # @sentinel/shared — shared types and utilities (no internal deps)
 │   │   └── src/
-│   │       ├── index.ts          # Public API: version constants, CheckResult, auth types/config/errors/session/mfa/rbac, vault types
+│   │       ├── index.ts          # Public API: version constants, CheckResult, auth types/config/errors/session/mfa/rbac, vault types, browser types
 │   │       ├── auth/
 │   │       │   ├── types.ts      # AuthConfig, AuthUser, TokenPayload (incl. amr), AuthResult, AuthError
 │   │       │   ├── config.ts     # loadAuthConfig() — reads Auth0 env vars, throws on missing
@@ -27,12 +27,16 @@ sentinel/
 │   │       ├── vault/
 │   │       │   ├── types.ts      # StoredCredential, CredentialInput, PlaintextCredential, MaskedCredential, VaultConfig
 │   │       │   └── index.ts      # Barrel re-export for vault/
+│   │       ├── browser/
+│   │       │   ├── types.ts      # BrowserType, BrowserConfig, ArtifactConfig, DeviceProfile
+│   │       │   └── index.ts      # Barrel re-export for browser/
 │   │       └── __tests__/
-│   │           ├── index.test.ts # Unit tests for shared exports
-│   │           ├── auth.test.ts  # Unit tests for auth config loading and error factories
-│   │           ├── mfa.test.ts   # Unit tests for MFA error types and helpers
-│   │           ├── rbac.test.ts  # Unit tests for RBAC constants and helper functions
-│   │           └── vault.test.ts # Unit tests for vault type shapes and re-export accessibility
+│   │           ├── index.test.ts   # Unit tests for shared exports
+│   │           ├── auth.test.ts    # Unit tests for auth config loading and error factories
+│   │           ├── mfa.test.ts     # Unit tests for MFA error types and helpers
+│   │           ├── rbac.test.ts    # Unit tests for RBAC constants and helper functions
+│   │           ├── vault.test.ts   # Unit tests for vault type shapes and re-export accessibility
+│   │           └── browser.test.ts # Unit tests for browser type shapes and re-export accessibility
 │   ├── core/             # @sentinel/core — domain models and core business logic
 │   │   └── src/
 │   │       ├── index.ts          # Public API: Scenario interface, auth modules, vault modules, re-exports from shared
