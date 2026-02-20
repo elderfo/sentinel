@@ -1,0 +1,54 @@
+name: User Story
+description: Describe a feature from the user's perspective
+title: "Story: As a [role], I want [feature] so that [benefit]"
+labels: ["user-story"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to describe a feature in terms of who needs it, what they need, and why.
+
+  - type: input
+    id: role
+    attributes:
+      label: As a...
+      description: Who is the user or persona?
+      placeholder: e.g., QA Engineer, Developer, Platform Admin
+    validations:
+      required: true
+
+  - type: textarea
+    id: want
+    attributes:
+      label: I want...
+      description: What capability or feature do they need?
+      placeholder: Describe the desired functionality
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefit
+    attributes:
+      label: So that...
+      description: What benefit or outcome does this provide?
+      placeholder: Describe the value or reason
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: List the conditions that must be met for this story to be complete.
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other context, dependencies, or constraints.
