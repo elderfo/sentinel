@@ -3,7 +3,7 @@
  *
  * DOM analysis engine for the Sentinel QA platform.
  * Provides DOM parsing, element classification, accessibility analysis,
- * form detection, DOM diffing, and application state tracking.
+ * form detection, DOM diffing, application state tracking, and element stability analysis.
  */
 
 export type {
@@ -26,6 +26,10 @@ export type {
   AttributeChange,
   ElementModification,
   DomDiff,
+  SelectorStrategy,
+  SelectorCandidate,
+  StabilityAnalysis,
+  StabilizedElement,
 } from './types.js';
 
 export { parseDom, extractDom } from './parser/index.js';
@@ -47,3 +51,5 @@ export {
 } from './accessibility/index.js';
 
 export { detectForms, extractConstraints } from './forms/index.js';
+
+export { analyzeStability, isDynamicId } from './stability/index.js';
