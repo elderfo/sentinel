@@ -26,6 +26,9 @@ export type {
   AttributeChange,
   ElementModification,
   DomDiff,
+  VisualRegion,
+  VisualRegionSource,
+  VisualDetectionResult,
   SelectorStrategy,
   SelectorCandidate,
   StabilityAnalysis,
@@ -51,5 +54,12 @@ export {
 } from './accessibility/index.js';
 
 export { detectForms, extractConstraints } from './forms/index.js';
+
+export {
+  detectVisualElements,
+  type VisualRecognizer,
+  NoOpVisualRecognizer,
+  extractVisualElements,
+} from './visual/index.js';
 
 export { analyzeStability, isDynamicId } from './stability/index.js';
