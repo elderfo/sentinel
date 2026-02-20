@@ -8,6 +8,10 @@ Sentinel is an open-source, AI-first autonomous QA automation platform structure
 
 ```
 sentinel/
+├── .github/
+│   ├── workflows/
+│   │   └── ci.yml        # CI pipeline: lint, typecheck, test, build (fan-in to build)
+│   └── ISSUE_TEMPLATE/   # GitHub issue templates
 ├── packages/
 │   ├── shared/           # @sentinel/shared — shared types and utilities (no internal deps)
 │   │   └── src/
