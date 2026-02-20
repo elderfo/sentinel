@@ -15,11 +15,16 @@ export function isUrlAllowed(url: string, config: ScopeConfig, baseDomain: strin
 
   // Strip excluded query params before pattern matching
   for (const pattern of config.excludeQueryPatterns) {
-    const regex = new RegExp(pattern);
-    for (const key of [...parsed.searchParams.keys()]) {
-      if (regex.test(key)) {
-        parsed.searchParams.delete(key);
+    try {
+      const regex = new RegExp(pattern);
+      for (const key of [...parsed.searchParams.keys()]) {
+        if (regex.test(key)) {
+          parsed.searchParams.delete(key);
+        }
       }
+    } catch {
+      // Invalid pattern — skip (caller should validate config upfront)
+      continue;
     }
   }
 
@@ -27,8 +32,12 @@ export function isUrlAllowed(url: string, config: ScopeConfig, baseDomain: strin
 
   // Deny patterns take precedence
   for (const pattern of config.denyPatterns) {
-    if (new RegExp(pattern).test(testUrl)) {
-      return { allowed: false, reason: `Matches deny pattern: ${pattern}` };
+    try {
+      if (new RegExp(pattern).test(testUrl)) {
+        return { allowed: false, reason: `Matches deny pattern: ${pattern}` };
+      }
+    } catch {
+      continue;
     }
   }
 
@@ -39,8 +48,12 @@ export function isUrlAllowed(url: string, config: ScopeConfig, baseDomain: strin
 
   // Check allow patterns
   for (const pattern of config.allowPatterns) {
-    if (new RegExp(pattern).test(testUrl)) {
-      return { allowed: true, reason: `Matches allow pattern: ${pattern}` };
+    try {
+      if (new RegExp(pattern).test(testUrl)) {
+        return { allowed: true, reason: `Matches allow pattern: ${pattern}` };
+      }
+    } catch {
+      continue;
     }
   }
 

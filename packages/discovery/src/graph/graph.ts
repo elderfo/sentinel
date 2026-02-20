@@ -66,5 +66,15 @@ export function serializeGraph(graph: AppGraph): string {
 }
 
 export function deserializeGraph(json: string): AppGraph {
-  return JSON.parse(json) as AppGraph;
+  const parsed: unknown = JSON.parse(json);
+  if (
+    typeof parsed !== 'object' ||
+    parsed === null ||
+    !('nodes' in parsed) ||
+    !('edges' in parsed) ||
+    !('metadata' in parsed)
+  ) {
+    throw new Error('Invalid graph JSON: missing required fields (nodes, edges, metadata)');
+  }
+  return parsed as AppGraph;
 }

@@ -174,5 +174,17 @@ describe('graph', () => {
       expect(restored.edges).toEqual(graph.edges);
       expect(restored.metadata.startUrl).toBe(graph.metadata.startUrl);
     });
+
+    it('throws on invalid JSON structure', () => {
+      expect(() => deserializeGraph('{"foo":1}')).toThrow(
+        'Invalid graph JSON: missing required fields',
+      );
+    });
+
+    it('throws on non-object JSON', () => {
+      expect(() => deserializeGraph('"just a string"')).toThrow(
+        'Invalid graph JSON: missing required fields',
+      );
+    });
   });
 });
