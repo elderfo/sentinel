@@ -19,7 +19,8 @@
       "@sentinel/core": ["./packages/core/src/index.ts"],
       "@sentinel/cli": ["./packages/cli/src/index.ts"],
       "@sentinel/web": ["./packages/web/src/index.ts"],
-      "@sentinel/shared": ["./packages/shared/src/index.ts"]
+      "@sentinel/shared": ["./packages/shared/src/index.ts"],
+      "@sentinel/browser": ["./packages/browser/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "**/dist/**"]
