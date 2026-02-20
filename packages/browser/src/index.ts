@@ -6,6 +6,9 @@
 
 export { loadBrowserConfig } from './config.js';
 export { getDeviceProfile, listDeviceProfiles } from './devices.js';
+export { ArtifactManager } from './artifacts.js';
+export { NetworkLog, PlaywrightBrowserEngine } from './playwright/index.js';
+export type { PlaywrightEngineOptions } from './playwright/index.js';
 
 export type {
   BrowserEngine,
