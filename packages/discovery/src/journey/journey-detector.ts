@@ -144,7 +144,10 @@ export function classifyJourneyType(steps: readonly AppEdge[], graph: AppGraph):
   const sourceNode = getNode(graph, firstEdge.sourceId);
 
   if (sourceNode && isLoginPage(sourceNode) && isFormSubmitEdge(firstEdge)) {
-    return 'authentication';
+    const targetNode = getNode(graph, firstEdge.targetId);
+    if (!targetNode || !isLoginPage(targetNode)) {
+      return 'authentication';
+    }
   }
 
   if (steps.some(isFormSubmitEdge)) {

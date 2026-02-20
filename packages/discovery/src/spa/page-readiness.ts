@@ -1,5 +1,5 @@
 import type { BrowserEngine, PageHandle } from '@sentinel/browser';
-import type { SpaReadinessOptions } from '../types.js';
+import type { SpaReadinessOptions, SpaNavigationResult } from '../types.js';
 
 const DEFAULT_OPTIONS: SpaReadinessOptions = {
   stabilityTimeout: 5000,
@@ -54,7 +54,7 @@ export async function detectSpaNavigation(
   page: PageHandle,
   action: () => Promise<void>,
   readinessOptions?: Partial<SpaReadinessOptions>,
-): Promise<{ readonly navigated: boolean; readonly newUrl: string }> {
+): Promise<SpaNavigationResult> {
   const urlBefore = engine.currentUrl(page);
   await action();
   await waitForPageReady(engine, page, readinessOptions);

@@ -119,6 +119,11 @@ export interface SpaReadinessOptions {
   readonly pollInterval: number;
 }
 
+export interface SpaNavigationResult {
+  readonly navigated: boolean;
+  readonly newUrl: string;
+}
+
 // ---------------------------------------------------------------------------
 // User journey identification (Story 5.4)
 // ---------------------------------------------------------------------------
