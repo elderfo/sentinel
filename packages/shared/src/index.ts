@@ -21,6 +21,13 @@ export {
   MFA_ERROR_CODES,
   isMfaError,
   createMfaError,
+  ROLES,
+  PERMISSIONS,
+  ROLE_PERMISSIONS,
+  hasPermission,
+  hasAllPermissions,
+  hasAnyPermission,
+  hasRole,
 } from './auth/index.js';
 export type {
   SessionConfig,
@@ -29,3 +36,4 @@ export type {
   WorkerTokenRequest,
   WorkerToken,
 } from './auth/index.js';
+export type { Role, Permission } from './auth/index.js';

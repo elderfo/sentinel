@@ -15,18 +15,20 @@ sentinel/
 ├── packages/
 │   ├── shared/           # @sentinel/shared — shared types and utilities (no internal deps)
 │   │   └── src/
-│   │       ├── index.ts          # Public API: version constants, CheckResult, auth types/config/errors/session
+│   │       ├── index.ts          # Public API: version constants, CheckResult, auth types/config/errors/session/mfa/rbac
 │   │       ├── auth/
 │   │       │   ├── types.ts      # AuthConfig, AuthUser, TokenPayload (incl. amr), AuthResult, AuthError
 │   │       │   ├── config.ts     # loadAuthConfig() — reads Auth0 env vars, throws on missing
 │   │       │   ├── errors.ts     # unauthorizedError, forbiddenError, authConfigError factories
 │   │       │   ├── session.ts    # SessionConfig, TokenSet, TokenRefreshResult, WorkerTokenRequest, WorkerToken
 │   │       │   ├── mfa.ts        # MFA_ERROR_CODES, MfaErrorCode, MfaError, MfaChallengeResult, isMfaError, createMfaError
+│   │       │   ├── rbac.ts       # ROLES, PERMISSIONS, ROLE_PERMISSIONS constants; hasPermission/hasRole helpers
 │   │       │   └── index.ts      # Barrel re-export for auth/
 │   │       └── __tests__/
 │   │           ├── index.test.ts # Unit tests for shared exports
 │   │           ├── auth.test.ts  # Unit tests for auth config loading and error factories
-│   │           └── mfa.test.ts   # Unit tests for MFA error types and helpers
+│   │           ├── mfa.test.ts   # Unit tests for MFA error types and helpers
+│   │           └── rbac.test.ts  # Unit tests for RBAC constants and helper functions
 │   ├── core/             # @sentinel/core — domain models and core business logic
 │   │   └── src/
 │   │       ├── index.ts          # Public API: Scenario interface, auth modules, re-exports from shared
@@ -34,6 +36,7 @@ sentinel/
 │   │       │   ├── jwt.ts        # verifyAccessToken() (extracts amr claim), createAuth0JwksGetter(), JwksGetter type
 │   │       │   ├── middleware.ts  # createAuthMiddleware(), requirePermissions() — framework-agnostic
 │   │       │   ├── mfa.ts        # createMfaEnforcementMiddleware(), parseMfaErrorResponse()
+│   │       │   ├── rbac.ts       # requireRole(), requirePermission(), createRbacMiddleware()
 │   │       │   ├── user.ts       # tokenPayloadToUser() — maps TokenPayload to AuthUser
 │   │       │   ├── session.ts    # SessionManager class, createAuth0TokenExchanger(), TokenExchanger type
 │   │       │   └── index.ts      # Barrel re-export for auth/
@@ -41,7 +44,8 @@ sentinel/
 │   │           ├── index.test.ts  # Unit tests for core exports
 │   │           ├── auth.test.ts   # Unit tests for JWT verification and auth middleware
 │   │           ├── session.test.ts # Unit tests for SessionManager (createTokenSet, refresh, needsRefresh, etc.)
-│   │           └── mfa.test.ts   # Unit tests for MFA enforcement middleware and response parsing
+│   │           ├── mfa.test.ts   # Unit tests for MFA enforcement middleware and response parsing
+│   │           └── rbac.test.ts  # Unit tests for RBAC middleware functions
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared
@@ -53,7 +57,8 @@ sentinel/
 │           └── __tests__/
 │               └── index.test.ts # Unit tests for web exports
 ├── docs/
-│   └── auth0-mfa-setup.md  # Auth0 MFA configuration guide and Sentinel error-handling reference
+│   ├── auth0-mfa-setup.md  # Auth0 MFA configuration guide and Sentinel error-handling reference
+│   └── auth0-rbac-setup.md  # Auth0 RBAC configuration guide: roles, permissions, token settings
 ├── Dockerfile            # Multi-stage build: base → deps → build → api → web
 ├── docker-compose.yml    # Full local stack: api, web, browser-worker, redis, postgres
 ├── .dockerignore         # Excludes node_modules, dist, .git, .env, .claude, coverage
