@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "paths": {
+      "@sentinel/core": ["./packages/core/src/index.ts"],
+      "@sentinel/cli": ["./packages/cli/src/index.ts"],
+      "@sentinel/web": ["./packages/web/src/index.ts"],
+      "@sentinel/shared": ["./packages/shared/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "**/dist/**"]
+}
