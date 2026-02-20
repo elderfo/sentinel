@@ -27,3 +27,5 @@ export type {
   ElementModification,
   DomDiff,
 } from './types.js';
+
+export { parseDom } from './parser/index.js';
