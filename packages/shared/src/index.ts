@@ -37,3 +37,10 @@ export type {
   WorkerToken,
 } from './auth/index.js';
 export type { Role, Permission } from './auth/index.js';
+export type {
+  StoredCredential,
+  CredentialInput,
+  PlaintextCredential,
+  MaskedCredential,
+  VaultConfig,
+} from './vault/index.js';
