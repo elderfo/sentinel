@@ -28,7 +28,7 @@ export type {
   DomDiff,
 } from './types.js';
 
-export { parseDom } from './parser/index.js';
+export { parseDom, extractDom } from './parser/index.js';
 
 export {
   classifyInteractiveElements,
@@ -43,6 +43,7 @@ export {
   parseAccessibilityTree,
   mergeAccessibility,
   findAccessibilityIssues,
+  extractAccessibilityTree,
 } from './accessibility/index.js';
 
 export { detectForms, extractConstraints } from './forms/index.js';
