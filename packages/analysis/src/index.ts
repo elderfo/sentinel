@@ -29,3 +29,9 @@ export type {
 } from './types.js';
 
 export { parseDom } from './parser/index.js';
+
+export {
+  classifyInteractiveElements,
+  categorizeByRole,
+  categorizeByTag,
+} from './classifier/index.js';
