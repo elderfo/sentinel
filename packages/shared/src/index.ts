@@ -18,3 +18,10 @@ export {
   forbiddenError,
   authConfigError,
 } from './auth/index.js';
+export type {
+  SessionConfig,
+  TokenSet,
+  TokenRefreshResult,
+  WorkerTokenRequest,
+  WorkerToken,
+} from './auth/index.js';

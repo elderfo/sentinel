@@ -20,6 +20,8 @@ export {
   tokenPayloadToUser,
   createAuthMiddleware,
   requirePermissions,
+  SessionManager,
+  createAuth0TokenExchanger,
 } from './auth/index.js';
 export type {
   JwksGetter,
@@ -27,4 +29,5 @@ export type {
   AuthMiddlewareResult,
   AuthMiddlewareFn,
   PermissionMiddlewareFn,
+  TokenExchanger,
 } from './auth/index.js';
