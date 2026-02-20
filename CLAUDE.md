@@ -15,16 +15,24 @@ sentinel/
 ├── packages/
 │   ├── shared/           # @sentinel/shared — shared types and utilities (no internal deps)
 │   │   └── src/
-│   │       └── index.ts  # Public API: version constants, CheckResult discriminated union
+│   │       ├── index.ts          # Public API: version constants, CheckResult discriminated union
+│   │       └── __tests__/
+│   │           └── index.test.ts # Unit tests for shared exports
 │   ├── core/             # @sentinel/core — domain models and core business logic
 │   │   └── src/
-│   │       └── index.ts  # Public API: Scenario interface, re-exports from shared
+│   │       ├── index.ts          # Public API: Scenario interface, re-exports from shared
+│   │       └── __tests__/
+│   │           └── index.test.ts # Unit tests for core exports
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
-│   │       └── index.ts  # Public API: CLI_NAME, re-exports from core/shared
+│   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared
+│   │       └── __tests__/
+│   │           └── index.test.ts # Unit tests for CLI exports
 │   └── web/              # @sentinel/web — web application entry point
 │       └── src/
-│           └── index.ts  # Public API: APP_TITLE, re-exports from core/shared
+│           ├── index.ts          # Public API: APP_TITLE, re-exports from core/shared
+│           └── __tests__/
+│               └── index.test.ts # Unit tests for web exports
 ├── Dockerfile            # Multi-stage build: base → deps → build → api → web
 ├── docker-compose.yml    # Full local stack: api, web, browser-worker, redis, postgres
 ├── .dockerignore         # Excludes node_modules, dist, .git, .env, .claude, coverage
@@ -32,13 +40,14 @@ sentinel/
 ├── DEVELOPMENT.md        # Local dev guide: quick start, architecture, commands, troubleshooting
 ├── .husky/
 │   └── pre-commit        # Runs lint-staged and tsc --noEmit before each commit
+├── vitest.config.ts      # Root Vitest config: projects, reporters, coverage thresholds, path aliases
 ├── tsconfig.json         # Base config: strict, ES2022, NodeNext, path aliases
 ├── tsconfig.build.json   # Composite build references in dependency order
 ├── eslint.config.mjs     # ESLint v9 flat config: @typescript-eslint strict-type-checked rules
 ├── .prettierrc           # Prettier config: singleQuote, semi, tabWidth 2, trailingComma all
 ├── .prettierignore       # Prettier exclusions: dist, node_modules, coverage, pnpm-lock.yaml
 ├── pnpm-workspace.yaml   # Declares packages/* as workspace members
-├── package.json          # Root: scripts (build/clean/typecheck/lint/format), lint-staged config
+├── package.json          # Root: scripts (build/clean/typecheck/lint/format/test), lint-staged config
 ├── README.md             # Setup and usage documentation
 └── CLAUDE.md             # This file
 ```
@@ -70,3 +79,12 @@ git commit --no-verify -m "your message"
 ```
 
 Use `--no-verify` sparingly. Any bypass should be followed immediately by a lint/format fix commit.
+
+## Test Infrastructure
+
+- Vitest 4 is the test runner; the root `vitest.config.ts` defines all four packages as projects
+- Vitest path aliases in `vitest.config.ts` resolve `@sentinel/*` imports to source files at test time (no build required)
+- Each package also has its own `vitest.config.ts` for running tests in isolation via `pnpm test` within that package
+- Tests live in `src/__tests__/` directories following the `*.test.ts` naming convention
+- Coverage is collected with v8 provider; minimum 80% threshold enforced across statements, branches, functions, and lines
+- JUnit XML output is written to `test-results/junit.xml` (root) and `packages/*/test-results/junit.xml` (per-package)
