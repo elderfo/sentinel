@@ -35,3 +35,6 @@ export {
   categorizeByRole,
   categorizeByTag,
 } from './classifier/index.js';
+
+export { diffDom } from './diff/index.js';
+export { StateTracker, hashDomContent, exportGraphJson } from './state/index.js';
