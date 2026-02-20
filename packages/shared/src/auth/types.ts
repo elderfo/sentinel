@@ -28,6 +28,8 @@ export interface TokenPayload {
   readonly exp: number;
   readonly iat: number;
   readonly permissions?: readonly string[];
+  /** Authentication Methods Reference — indicates the methods used to authenticate the user. */
+  readonly amr?: readonly string[];
 }
 
 export type AuthResult =
