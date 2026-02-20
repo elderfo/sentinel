@@ -171,3 +171,24 @@ export interface DomDiff {
   readonly removed: readonly DomNode[];
   readonly modified: readonly ElementModification[];
 }
+
+// ---------------------------------------------------------------------------
+// Element stability analysis
+// ---------------------------------------------------------------------------
+
+export type SelectorStrategy = 'id' | 'css' | 'xpath' | 'aria';
+
+export interface SelectorCandidate {
+  readonly strategy: SelectorStrategy;
+  readonly value: string;
+  readonly score: number;
+}
+
+export interface StabilityAnalysis {
+  readonly selectors: readonly SelectorCandidate[];
+  readonly recommendedSelector: SelectorCandidate;
+}
+
+export interface StabilizedElement extends InteractiveElement {
+  readonly stability: StabilityAnalysis;
+}
