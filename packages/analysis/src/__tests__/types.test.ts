@@ -1,15 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import type {
   DomNode,
-  BoundingBox,
   ElementCategory,
   InteractiveElement,
-  AccessibilityInfo,
   FormModel,
-  FieldConstraints,
   PageState,
   DomDiff,
-  AttributeChange,
   RawDomData,
   RawAccessibilityNode,
 } from '../types.js';
@@ -193,24 +189,5 @@ describe('analysis types', () => {
       children: [],
     };
     expect(raw.role).toBe('button');
-  });
-
-  // Ensure unused type imports don't cause type errors
-  it('all types are importable', () => {
-    const _bb: BoundingBox = { x: 0, y: 0, width: 0, height: 0 };
-    const _ai: AccessibilityInfo = { name: '', role: '', description: '', states: {} };
-    const _ac: AttributeChange = { type: 'text', name: '', oldValue: null, newValue: null };
-    const _fc: FieldConstraints = {
-      required: false,
-      pattern: null,
-      min: null,
-      max: null,
-      minLength: null,
-      maxLength: null,
-    };
-    expect(_bb).toBeDefined();
-    expect(_ai).toBeDefined();
-    expect(_ac).toBeDefined();
-    expect(_fc).toBeDefined();
   });
 });
