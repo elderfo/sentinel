@@ -8,3 +8,5 @@ export type {
   AuthMiddlewareFn,
   PermissionMiddlewareFn,
 } from './middleware.js';
+export { SessionManager, createAuth0TokenExchanger } from './session.js';
+export type { TokenExchanger } from './session.js';
