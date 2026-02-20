@@ -38,3 +38,11 @@ export {
 
 export { diffDom } from './diff/index.js';
 export { StateTracker, hashDomContent, exportGraphJson } from './state/index.js';
+
+export {
+  parseAccessibilityTree,
+  mergeAccessibility,
+  findAccessibilityIssues,
+} from './accessibility/index.js';
+
+export { detectForms, extractConstraints } from './forms/index.js';
