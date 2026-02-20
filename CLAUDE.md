@@ -60,6 +60,24 @@ sentinel/
 │   │           ├── mfa.test.ts   # Unit tests for MFA enforcement middleware and response parsing
 │   │           ├── rbac.test.ts  # Unit tests for RBAC middleware functions
 │   │           └── vault.test.ts  # Unit tests for CredentialVault (encryption, CRUD, permission checks)
+│   ├── browser/          # @sentinel/browser — browser engine abstraction and Playwright implementation
+│   │   └── src/
+│   │       ├── index.ts          # Public API: config, devices, types, engine, artifacts, network
+│   │       ├── config.ts         # loadBrowserConfig() — reads BROWSER_* env vars with defaults/validation
+│   │       ├── devices.ts        # Built-in device profiles (10 devices), getDeviceProfile(), listDeviceProfiles()
+│   │       ├── types.ts          # BrowserEngine interface, branded handles, option/network/HAR types
+│   │       ├── artifacts.ts      # ArtifactManager — screenshot capture, filename generation, retention enforcement
+│   │       ├── playwright/
+│   │       │   ├── index.ts      # Barrel for PlaywrightBrowserEngine and NetworkLog
+│   │       │   ├── engine.ts     # PlaywrightBrowserEngine — full BrowserEngine implementation
+│   │       │   └── network.ts    # NetworkLog — request/response tracking with HAR 1.2 export
+│   │       └── __tests__/
+│   │           ├── config.test.ts    # Unit tests for browser config loading
+│   │           ├── devices.test.ts   # Unit tests for device profile registry
+│   │           ├── types.test.ts     # Type-level tests for BrowserEngine interface
+│   │           ├── engine.test.ts    # Unit tests for PlaywrightBrowserEngine (mocked)
+│   │           ├── artifacts.test.ts # Unit tests for ArtifactManager
+│   │           └── network.test.ts   # Unit tests for NetworkLog
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared
@@ -122,7 +140,7 @@ Use `--no-verify` sparingly. Any bypass should be followed immediately by a lint
 
 ## Test Infrastructure
 
-- Vitest 4 is the test runner; the root `vitest.config.ts` defines all four packages as projects
+- Vitest 4 is the test runner; the root `vitest.config.ts` defines all five packages as projects
 - Vitest path aliases in `vitest.config.ts` resolve `@sentinel/*` imports to source files at test time (no build required)
 - Each package also has its own `vitest.config.ts` for running tests in isolation via `pnpm test` within that package
 - Tests live in `src/__tests__/` directories following the `*.test.ts` naming convention
