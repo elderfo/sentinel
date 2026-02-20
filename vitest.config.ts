@@ -1,31 +1,24 @@
-import { defineConfig } from "vitest/config";
-import { resolve } from "path";
+import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
 
 const root = __dirname;
 
 export default defineConfig({
   resolve: {
     alias: {
-      "@sentinel/shared": resolve(root, "packages/shared/src/index.ts"),
-      "@sentinel/core": resolve(root, "packages/core/src/index.ts"),
-      "@sentinel/cli": resolve(root, "packages/cli/src/index.ts"),
-      "@sentinel/web": resolve(root, "packages/web/src/index.ts"),
+      '@sentinel/shared': resolve(root, 'packages/shared/src/index.ts'),
+      '@sentinel/core': resolve(root, 'packages/core/src/index.ts'),
+      '@sentinel/cli': resolve(root, 'packages/cli/src/index.ts'),
+      '@sentinel/web': resolve(root, 'packages/web/src/index.ts'),
+      '@sentinel/browser': resolve(root, 'packages/browser/src/index.ts'),
     },
   },
   test: {
-    reporters: [
-      "default",
-      ["junit", { outputFile: "./test-results/junit.xml" }],
-    ],
+    reporters: ['default', ['junit', { outputFile: './test-results/junit.xml' }]],
     coverage: {
-      provider: "v8",
-      include: ["packages/*/src/**/*.ts"],
-      exclude: [
-        "node_modules",
-        "**/dist/**",
-        "**/*.test.ts",
-        "**/__tests__/**",
-      ],
+      provider: 'v8',
+      include: ['packages/*/src/**/*.ts'],
+      exclude: ['node_modules', '**/dist/**', '**/*.test.ts', '**/__tests__/**'],
       thresholds: {
         statements: 80,
         branches: 80,
@@ -37,29 +30,36 @@ export default defineConfig({
       {
         extends: true,
         test: {
-          name: "@sentinel/shared",
-          include: ["packages/shared/src/**/*.test.ts"],
+          name: '@sentinel/shared',
+          include: ['packages/shared/src/**/*.test.ts'],
         },
       },
       {
         extends: true,
         test: {
-          name: "@sentinel/core",
-          include: ["packages/core/src/**/*.test.ts"],
+          name: '@sentinel/core',
+          include: ['packages/core/src/**/*.test.ts'],
         },
       },
       {
         extends: true,
         test: {
-          name: "@sentinel/cli",
-          include: ["packages/cli/src/**/*.test.ts"],
+          name: '@sentinel/cli',
+          include: ['packages/cli/src/**/*.test.ts'],
         },
       },
       {
         extends: true,
         test: {
-          name: "@sentinel/web",
-          include: ["packages/web/src/**/*.test.ts"],
+          name: '@sentinel/web',
+          include: ['packages/web/src/**/*.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: '@sentinel/browser',
+          include: ['packages/browser/src/**/*.test.ts'],
         },
       },
     ],

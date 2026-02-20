@@ -44,3 +44,4 @@ export type {
   MaskedCredential,
   VaultConfig,
 } from './vault/index.js';
+export type { BrowserType, BrowserConfig, ArtifactConfig, DeviceProfile } from './browser/index.js';
