@@ -59,11 +59,41 @@ describe('analyzeStability', () => {
       makeElement({
         tag: 'button',
         classes: ['btn-primary'],
-        cssSelector: 'button.btn-primary',
       }),
     ];
     const result = analyzeStability(elements);
     expect(result[0]?.stability.recommendedSelector.strategy).toBe('css');
+    expect(result[0]?.stability.recommendedSelector.value).toBe('button.btn-primary');
+  });
+
+  it('builds css candidate from tag + classes, ignoring dynamic IDs', () => {
+    const elements = [
+      makeElement({
+        tag: 'button',
+        id: ':r0:',
+        classes: ['btn', 'primary'],
+        cssSelector: 'button#\\:r0\\:',
+      }),
+    ];
+    const result = analyzeStability(elements);
+    const cssCandidate = result[0]?.stability.selectors.find((s) => s.strategy === 'css');
+    expect(cssCandidate?.value).toBe('button.btn.primary');
+    expect(result[0]?.stability.recommendedSelector.strategy).toBe('css');
+  });
+
+  it('escapes CSS-significant characters in ID and ARIA selectors', () => {
+    const elements = [
+      makeElement({
+        tag: 'div',
+        id: ':r0:',
+        attributes: { 'aria-label': 'Click "here"' },
+      }),
+    ];
+    const result = analyzeStability(elements);
+    const idCandidate = result[0]?.stability.selectors.find((s) => s.strategy === 'id');
+    expect(idCandidate?.value).toBe('#\\:r0\\:');
+    const ariaCandidate = result[0]?.stability.selectors.find((s) => s.strategy === 'aria');
+    expect(ariaCandidate?.value).toBe('[aria-label="Click \\"here\\""]');
   });
 
   it('falls back to xpath as last resort', () => {
@@ -86,7 +116,6 @@ describe('analyzeStability', () => {
         id: 'save',
         attributes: { role: 'button', 'aria-label': 'Save' },
         classes: ['btn'],
-        cssSelector: 'button#save',
         xpath: '/html/body/button',
       }),
     ];

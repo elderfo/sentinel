@@ -12,9 +12,19 @@ const ARIA_SCORE = 80;
 const CSS_SCORE = 60;
 const XPATH_SCORE = 30;
 
+/** Escape a string for safe use as a CSS identifier (e.g. in `#id` selectors). */
+function escapeCssIdentifier(value: string): string {
+  return value.replace(/([^\w-])/g, '\\$1');
+}
+
+/** Escape a string for safe use inside a CSS attribute value (e.g. `[attr="value"]`). */
+function escapeCssAttributeValue(value: string): string {
+  return value.replace(/["\\]/g, '\\$&');
+}
+
 function buildIdCandidate(id: string): SelectorCandidate {
   const score = isDynamicId(id) ? DYNAMIC_ID_SCORE : STABLE_ID_SCORE;
-  return { strategy: 'id', value: `#${id}`, score };
+  return { strategy: 'id', value: `#${escapeCssIdentifier(id)}`, score };
 }
 
 function buildAriaCandidate(
@@ -25,13 +35,14 @@ function buildAriaCandidate(
   if (!role && !label) return null;
 
   const parts: string[] = [];
-  if (role) parts.push(`[role="${role}"]`);
-  if (label) parts.push(`[aria-label="${label}"]`);
+  if (role) parts.push(`[role="${escapeCssAttributeValue(role)}"]`);
+  if (label) parts.push(`[aria-label="${escapeCssAttributeValue(label)}"]`);
   return { strategy: 'aria', value: parts.join(''), score: ARIA_SCORE };
 }
 
-function buildCssCandidate(cssSelector: string): SelectorCandidate {
-  return { strategy: 'css', value: cssSelector, score: CSS_SCORE };
+function buildCssCandidate(tag: string, classes: readonly string[]): SelectorCandidate {
+  const classSelector = classes.map((c) => `.${escapeCssIdentifier(c)}`).join('');
+  return { strategy: 'css', value: `${tag}${classSelector}`, score: CSS_SCORE };
 }
 
 function buildXpathCandidate(xpath: string): SelectorCandidate {
@@ -55,7 +66,7 @@ function buildStabilityAnalysis(element: InteractiveElement): StabilityAnalysis 
   }
 
   if (node.classes.length > 0) {
-    candidates.push(buildCssCandidate(node.cssSelector));
+    candidates.push(buildCssCandidate(node.tag, node.classes));
   }
 
   candidates.push(xpathCandidate);
