@@ -1,7 +1,7 @@
 node_modules/
 dist/
 build/
-coverage/
+/coverage/
 test-results/
 *.tsbuildinfo
 .env
