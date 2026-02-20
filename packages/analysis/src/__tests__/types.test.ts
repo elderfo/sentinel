@@ -8,6 +8,9 @@ import type {
   DomDiff,
   RawDomData,
   RawAccessibilityNode,
+  VisualRegion,
+  VisualRegionSource,
+  VisualDetectionResult,
 } from '../types.js';
 
 describe('analysis types', () => {
@@ -189,5 +192,37 @@ describe('analysis types', () => {
       children: [],
     };
     expect(raw.role).toBe('button');
+  });
+
+  it('VisualRegion captures detected visual area', () => {
+    const region: VisualRegion = {
+      boundingBox: { x: 10, y: 20, width: 200, height: 100 },
+      confidence: 0.95,
+      label: 'canvas-control',
+      source: 'dom-structural',
+    };
+    expect(region.source).toBe('dom-structural');
+    expect(region.confidence).toBe(0.95);
+  });
+
+  it('VisualDetectionResult captures all detection outputs', () => {
+    const result: VisualDetectionResult = {
+      visualRegions: [
+        {
+          boundingBox: { x: 0, y: 0, width: 300, height: 150 },
+          confidence: 1.0,
+          label: 'canvas-control',
+          source: 'dom-structural',
+        },
+      ],
+      unmatchedRegions: [],
+      canvasElements: [],
+    };
+    expect(result.visualRegions).toHaveLength(1);
+  });
+
+  it('VisualRegionSource covers all expected values', () => {
+    const sources: VisualRegionSource[] = ['dom-structural', 'visual-recognition'];
+    expect(sources).toHaveLength(2);
   });
 });

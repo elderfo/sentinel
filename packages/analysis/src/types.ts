@@ -171,3 +171,22 @@ export interface DomDiff {
   readonly removed: readonly DomNode[];
   readonly modified: readonly ElementModification[];
 }
+
+// ---------------------------------------------------------------------------
+// Visual element recognition
+// ---------------------------------------------------------------------------
+
+export type VisualRegionSource = 'dom-structural' | 'visual-recognition';
+
+export interface VisualRegion {
+  readonly boundingBox: BoundingBox;
+  readonly confidence: number;
+  readonly label: string;
+  readonly source: VisualRegionSource;
+}
+
+export interface VisualDetectionResult {
+  readonly visualRegions: readonly VisualRegion[];
+  readonly unmatchedRegions: readonly VisualRegion[];
+  readonly canvasElements: readonly DomNode[];
+}
