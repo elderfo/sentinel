@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build artifacts
+dist
+**/dist
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Test and coverage output
+coverage
+**/coverage
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Claude agent files
+.claude
+
+# Editor and OS artifacts
+.DS_Store
+*.swp
+*.swo
+.vscode
+.idea
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*

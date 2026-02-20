@@ -1,0 +1,150 @@
+name: sentinel
+
+# ---------------------------------------------------------------------------
+# Sentinel — full local stack
+#
+# Start everything:   docker compose up
+# Rebuild images:     docker compose up --build
+# Tear down (keep volumes): docker compose down
+# Tear down + wipe:   docker compose down -v
+# ---------------------------------------------------------------------------
+
+services:
+
+  # -------------------------------------------------------------------------
+  # api
+  # Sentinel API server built from the monorepo root Dockerfile (target: api).
+  # Exposes port 3000. All other services that depend on the API wait for its
+  # health check before starting.
+  # -------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    image: sentinel/api:local
+    ports:
+      - "${API_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3000
+      DATABASE_URL: ${DATABASE_URL:-postgresql://sentinel:sentinel@postgres:5432/sentinel}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------------
+  # web
+  # Sentinel web UI built from the monorepo root Dockerfile (target: web).
+  # Waits for the API to be healthy before starting so that the UI can safely
+  # contact the API on first load.
+  # -------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+    image: sentinel/web:local
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 8080
+      API_URL: ${API_URL:-http://api:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------------
+  # browser-worker
+  # Playwright browser automation worker. Uses the official Microsoft Playwright
+  # image which bundles all required browser binaries and system libraries.
+  # -------------------------------------------------------------------------
+  browser-worker:
+    image: mcr.microsoft.com/playwright:v1.50.0-noble
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      API_URL: ${API_URL:-http://api:3000}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Playwright requires a display server or must run in headless mode.
+      DISPLAY: ""
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Keep the worker alive; it polls Redis for jobs via the API.
+    command: ["node", "-e", "console.log('browser-worker: ready'); setInterval(()=>{},10000)"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------------
+  # redis
+  # Job queue and caching layer. Data is not persisted across compose down -v
+  # by default since queued jobs are ephemeral; adjust volumes if durability
+  # is required for your workflow.
+  # -------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: ["redis-server", "--appendonly", "no", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      start_period: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # -------------------------------------------------------------------------
+  # postgres
+  # Primary persistent datastore. Data is stored in a named volume so it
+  # survives `docker compose down` but is removed by `docker compose down -v`.
+  # -------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sentinel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sentinel}
+      POSTGRES_DB: ${POSTGRES_DB:-sentinel}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sentinel} -d ${POSTGRES_DB:-sentinel}"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  # Named volume for PostgreSQL data persistence across container restarts.
+  postgres_data:

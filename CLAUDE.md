@@ -21,6 +21,11 @@ sentinel/
 │   └── web/              # @sentinel/web — web application entry point
 │       └── src/
 │           └── index.ts  # Public API: APP_TITLE, re-exports from core/shared
+├── Dockerfile            # Multi-stage build: base → deps → build → api → web
+├── docker-compose.yml    # Full local stack: api, web, browser-worker, redis, postgres
+├── .dockerignore         # Excludes node_modules, dist, .git, .env, .claude, coverage
+├── .env.example          # All required environment variables with defaults and docs
+├── DEVELOPMENT.md        # Local dev guide: quick start, architecture, commands, troubleshooting
 ├── tsconfig.json         # Base config: strict, ES2022, NodeNext, path aliases
 ├── tsconfig.build.json   # Composite build references in dependency order
 ├── pnpm-workspace.yaml   # Declares packages/* as workspace members
