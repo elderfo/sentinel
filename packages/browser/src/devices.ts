@@ -94,7 +94,7 @@ export const BUILT_IN_DEVICES: readonly DeviceProfile[] = [
 ];
 
 /** Case-insensitive lookup map keyed by lowercase device name. */
-export const deviceMap: ReadonlyMap<string, DeviceProfile> = new Map(
+const deviceMap: ReadonlyMap<string, DeviceProfile> = new Map(
   BUILT_IN_DEVICES.map((profile) => [profile.name.toLowerCase(), profile]),
 );
 

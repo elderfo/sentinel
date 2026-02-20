@@ -34,6 +34,7 @@ export interface ContextOptions {
   readonly locale?: string;
   readonly timezoneId?: string;
   readonly recordVideo?: boolean;
+  readonly recordVideoDir?: string;
 }
 
 // ---------------------------------------------------------------------------

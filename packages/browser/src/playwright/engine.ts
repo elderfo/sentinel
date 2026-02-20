@@ -137,7 +137,9 @@ export class PlaywrightBrowserEngine implements BrowserEngine {
       ...(options?.hasTouch !== undefined && { hasTouch: options.hasTouch }),
       ...(options?.locale !== undefined && { locale: options.locale }),
       ...(options?.timezoneId !== undefined && { timezoneId: options.timezoneId }),
-      ...(options?.recordVideo === true && { recordVideo: { dir: './artifacts/video' } }),
+      ...(options?.recordVideo === true && {
+        recordVideo: { dir: options.recordVideoDir ?? './artifacts/video' },
+      }),
     });
 
     const handle = this.generateHandle() as BrowserContextHandle;
@@ -294,8 +296,15 @@ export class PlaywrightBrowserEngine implements BrowserEngine {
   // ---------------------------------------------------------------------------
 
   async onRequest(contextHandle: BrowserContextHandle, handler: RequestInterceptor): Promise<void> {
-    this.requestInterceptors.set(contextHandle, handler);
     const context = this.requireContext(contextHandle);
+
+    // Remove any previously registered route handler before adding the new one
+    // to prevent stale interceptors from accumulating in Playwright's routing.
+    if (this.requestInterceptors.has(contextHandle)) {
+      await context.unrouteAll();
+    }
+
+    this.requestInterceptors.set(contextHandle, handler);
 
     await context.route('**/*', async (route) => {
       const playwrightRequest = route.request();
@@ -354,9 +363,6 @@ export class PlaywrightBrowserEngine implements BrowserEngine {
     const context = this.requireContext(contextHandle);
 
     context.on('response', (playwrightResponse) => {
-      const responseInterceptor = this.responseInterceptors.get(contextHandle);
-      if (responseInterceptor === undefined) return;
-
       const playwrightRequest = playwrightResponse.request();
       const request: NetworkRequest = {
         url: playwrightRequest.url(),
@@ -370,6 +376,16 @@ export class PlaywrightBrowserEngine implements BrowserEngine {
         status: playwrightResponse.status(),
         headers: playwrightResponse.headers() as Record<string, string>,
       };
+
+      const log = this.networkLogs.get(contextHandle);
+      if (log !== undefined) {
+        // Duration is not available from the response event alone;
+        // record 0 and let consumers rely on HAR timing fields for precision.
+        log.record(request, response, 0);
+      }
+
+      const responseInterceptor = this.responseInterceptors.get(contextHandle);
+      if (responseInterceptor === undefined) return;
 
       void responseInterceptor(request, response);
     });
