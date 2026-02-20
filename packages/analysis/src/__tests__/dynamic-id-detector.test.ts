@@ -18,6 +18,8 @@ describe('isDynamicId', () => {
   it('detects framework-prefixed IDs', () => {
     expect(isDynamicId('react-select-123')).toBe(true);
     expect(isDynamicId('ember456')).toBe(true);
+    expect(isDynamicId('ember-456')).toBe(true);
+    expect(isDynamicId('ember_456')).toBe(true);
     expect(isDynamicId('ng-c123456')).toBe(true);
     expect(isDynamicId('vue-component-1')).toBe(true);
   });

@@ -1,7 +1,7 @@
 const DYNAMIC_PATTERNS: readonly RegExp[] = [
   /^:[rR][0-9a-zA-Z]*:$/,
   /^react[-_]/i,
-  /^ember\d/i,
+  /^ember[-_]?\d/i,
   /^ng-c\d/i,
   /^vue[-_]/i,
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
