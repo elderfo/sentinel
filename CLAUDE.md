@@ -15,14 +15,26 @@ sentinel/
 ├── packages/
 │   ├── shared/           # @sentinel/shared — shared types and utilities (no internal deps)
 │   │   └── src/
-│   │       ├── index.ts          # Public API: version constants, CheckResult discriminated union
+│   │       ├── index.ts          # Public API: version constants, CheckResult, auth types/config/errors
+│   │       ├── auth/
+│   │       │   ├── types.ts      # AuthConfig, AuthUser, TokenPayload, AuthResult, AuthError interfaces
+│   │       │   ├── config.ts     # loadAuthConfig() — reads Auth0 env vars, throws on missing
+│   │       │   ├── errors.ts     # unauthorizedError, forbiddenError, authConfigError factories
+│   │       │   └── index.ts      # Barrel re-export for auth/
 │   │       └── __tests__/
-│   │           └── index.test.ts # Unit tests for shared exports
+│   │           ├── index.test.ts # Unit tests for shared exports
+│   │           └── auth.test.ts  # Unit tests for auth config loading and error factories
 │   ├── core/             # @sentinel/core — domain models and core business logic
 │   │   └── src/
-│   │       ├── index.ts          # Public API: Scenario interface, re-exports from shared
+│   │       ├── index.ts          # Public API: Scenario interface, auth modules, re-exports from shared
+│   │       ├── auth/
+│   │       │   ├── jwt.ts        # verifyAccessToken(), createAuth0JwksGetter(), JwksGetter type
+│   │       │   ├── middleware.ts  # createAuthMiddleware(), requirePermissions() — framework-agnostic
+│   │       │   ├── user.ts       # tokenPayloadToUser() — maps TokenPayload to AuthUser
+│   │       │   └── index.ts      # Barrel re-export for auth/
 │   │       └── __tests__/
-│   │           └── index.test.ts # Unit tests for core exports
+│   │           ├── index.test.ts # Unit tests for core exports
+│   │           └── auth.test.ts  # Unit tests for JWT verification and auth middleware
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared

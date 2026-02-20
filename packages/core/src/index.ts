@@ -13,3 +13,18 @@ export interface Scenario {
   readonly name: string;
   readonly description?: string;
 }
+
+export {
+  verifyAccessToken,
+  createAuth0JwksGetter,
+  tokenPayloadToUser,
+  createAuthMiddleware,
+  requirePermissions,
+} from './auth/index.js';
+export type {
+  JwksGetter,
+  AuthRequest,
+  AuthMiddlewareResult,
+  AuthMiddlewareFn,
+  PermissionMiddlewareFn,
+} from './auth/index.js';
