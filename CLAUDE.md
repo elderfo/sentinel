@@ -80,7 +80,7 @@ sentinel/
 │   │           └── network.test.ts   # Unit tests for NetworkLog
 │   ├── analysis/         # @sentinel/analysis — DOM analysis engine (depends on shared + browser)
 │   │   └── src/
-│   │       ├── index.ts          # Public API: types, parser, classifier, diff, state, a11y, forms, extract adapters
+│   │       ├── index.ts          # Public API: types, parser, classifier, diff, state, a11y, forms, visual, stability, extract adapters
 │   │       ├── types.ts          # All analysis domain types: DomNode, InteractiveElement, FormModel, PageState, DomDiff, etc.
 │   │       ├── parser/
 │   │       │   ├── dom-parser.ts # parseDom() — pure: RawDomData → DomNode tree with xpath/css selectors
@@ -107,6 +107,15 @@ sentinel/
 │   │       │   ├── state-hasher.ts    # hashDomContent() — SHA-256 hash of visible DOM structure
 │   │       │   ├── transition-graph.ts # exportGraphJson() — JSON serialization of state graph
 │   │       │   └── index.ts           # Barrel re-export for state/
+│   │       ├── visual/
+│   │       │   ├── visual-detector.ts     # detectVisualElements() — pure: DOM → VisualDetectionResult
+│   │       │   ├── visual-recognizer.ts   # VisualRecognizer interface + NoOpVisualRecognizer
+│   │       │   ├── extract.ts             # extractVisualElements() — BrowserEngine adapter
+│   │       │   └── index.ts               # Barrel re-export for visual/
+│   │       ├── stability/
+│   │       │   ├── dynamic-id-detector.ts  # isDynamicId() — pattern matching for framework-generated IDs
+│   │       │   ├── stability-analyzer.ts   # analyzeStability() — scores selectors, recommends best locator strategy
+│   │       │   └── index.ts               # Barrel re-export for stability/
 │   │       └── __tests__/
 │   │           ├── types.test.ts                  # Type structural tests
 │   │           ├── dom-parser.test.ts             # DOM parser unit tests
@@ -115,6 +124,10 @@ sentinel/
 │   │           ├── form-detector.test.ts          # Form detector unit tests
 │   │           ├── dom-differ.test.ts             # DOM differ unit tests
 │   │           ├── state-tracker.test.ts          # State tracker unit tests
+│   │           ├── visual-detector.test.ts        # Visual detector unit tests
+│   │           ├── visual-recognizer.test.ts      # Visual recognizer unit tests
+│   │           ├── dynamic-id-detector.test.ts    # Dynamic ID detector unit tests
+│   │           ├── stability-analyzer.test.ts     # Stability analyzer unit tests
 │   │           └── extract.test.ts                # Browser extract adapter unit tests
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
