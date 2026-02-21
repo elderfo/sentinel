@@ -37,6 +37,7 @@ export function isUrlAllowed(url: string, config: ScopeConfig, baseDomain: strin
         return { allowed: false, reason: `Matches deny pattern: ${pattern}` };
       }
     } catch {
+      // Invalid regex pattern — skip (caller should validate config upfront)
       continue;
     }
   }
@@ -53,6 +54,7 @@ export function isUrlAllowed(url: string, config: ScopeConfig, baseDomain: strin
         return { allowed: true, reason: `Matches allow pattern: ${pattern}` };
       }
     } catch {
+      // Invalid regex pattern — skip (caller should validate config upfront)
       continue;
     }
   }

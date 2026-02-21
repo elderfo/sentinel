@@ -7,16 +7,10 @@ import type { ExplorationConfig, ScopeConfig, CycleConfig } from '../types.js';
 vi.mock('@sentinel/analysis', () => ({
   extractDom: vi.fn(),
   classifyInteractiveElements: vi.fn(),
-  detectForms: vi.fn(),
   hashDomContent: vi.fn(),
 }));
 
-import {
-  extractDom,
-  classifyInteractiveElements,
-  detectForms,
-  hashDomContent,
-} from '@sentinel/analysis';
+import { extractDom, classifyInteractiveElements, hashDomContent } from '@sentinel/analysis';
 import {
   explore,
   serializeExplorationState,
@@ -123,7 +117,6 @@ describe('crawler', () => {
 
     vi.mocked(extractDom).mockResolvedValue(simpleDom);
     vi.mocked(classifyInteractiveElements).mockReturnValue([]);
-    vi.mocked(detectForms).mockReturnValue([]);
     vi.mocked(hashDomContent).mockReturnValue('hash-default');
   });
 

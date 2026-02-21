@@ -1,10 +1,5 @@
 import type { BrowserEngine, PageHandle } from '@sentinel/browser';
-import {
-  extractDom,
-  classifyInteractiveElements,
-  detectForms,
-  hashDomContent,
-} from '@sentinel/analysis';
+import { extractDom, classifyInteractiveElements, hashDomContent } from '@sentinel/analysis';
 import type {
   ExplorationConfig,
   ExplorationResult,
@@ -13,7 +8,7 @@ import type {
   AppNode,
   CycleEntry,
 } from '../types.js';
-import { createGraph, addNode, addEdge, completeGraph } from '../graph/graph.js';
+import { createGraph, addNode, completeGraph } from '../graph/graph.js';
 import { normalizeUrl } from '../cycle/url-normalizer.js';
 import {
   computeFingerprint,
@@ -55,6 +50,7 @@ export async function explore(
     try {
       await engine.navigate(page, url);
     } catch {
+      // Navigation failed (network error, invalid URL) — skip page
       continue;
     }
 
@@ -66,6 +62,7 @@ export async function explore(
     try {
       dom = await extractDom(engine, page);
     } catch {
+      // DOM extraction failed — skip page (may be a blank or error page)
       continue;
     }
 
@@ -83,7 +80,6 @@ export async function explore(
     paramUrlCounts.set(normalized, (paramUrlCounts.get(normalized) ?? 0) + 1);
 
     const elements = classifyInteractiveElements(dom);
-    detectForms(dom);
     totalElementsFound += elements.length;
 
     let title = '';
@@ -106,6 +102,8 @@ export async function explore(
     graph = addNode(graph, node);
 
     // Extract links and queue them
+    // Edges are not created here — targetId is unknown until the target page is visited.
+    // Edges are created retroactively when a queued URL is visited (see node creation above).
     for (const el of elements) {
       if (el.category === 'navigation-link') {
         const href = el.node.attributes['href'];
@@ -115,13 +113,6 @@ export async function explore(
             const linkScope = isUrlAllowed(fullUrl, config.scope, baseDomain);
             if (linkScope.allowed) {
               queue.push(fullUrl);
-              graph = addEdge(graph, {
-                sourceId: node.id,
-                targetId: '',
-                actionType: 'navigation',
-                selector: el.node.cssSelector,
-                httpStatus: null,
-              });
             }
           } catch {
             // Skip invalid URLs
@@ -151,6 +142,8 @@ export async function explore(
     }
   }
 
+  // V1 limitation: path coverage is always 100% because edges are only added when
+  // traversed. Separate "discovered vs traversed" edge tracking is a future enhancement.
   const finalCoverage = calculateCoverage(
     graph.nodes.length,
     graph.nodes.length + queue.length,
