@@ -163,6 +163,50 @@ sentinel/
 │   │           ├── spa.test.ts        # SPA readiness unit tests (mocked BrowserEngine)
 │   │           ├── journey.test.ts    # Journey identification unit tests
 │   │           └── crawler.test.ts    # Crawler orchestrator unit tests (mocked BrowserEngine + analysis)
+│   ├── generator/        # @sentinel/generator — test generation pipeline (depends on shared + analysis + discovery)
+│   │   └── src/
+│   │       ├── index.ts          # Public API: types, config, planner, data, assertions, ai, emitter, orchestrator
+│   │       ├── types.ts          # All generator domain types: TestCase, TestSuite, GeneratorConfig, AiProvider, etc.
+│   │       ├── config/
+│   │       │   ├── config.ts     # loadGeneratorConfig(), validateConfig()
+│   │       │   └── index.ts      # Barrel re-export for config/
+│   │       ├── planner/
+│   │       │   ├── planner.ts    # planTestCases() — journeys → TestCase outlines
+│   │       │   └── index.ts      # Barrel re-export for planner/
+│   │       ├── data/
+│   │       │   ├── data-generator.ts  # generateTestData() — fills form steps with valid/invalid data
+│   │       │   ├── strategies.ts      # RealisticDataStrategy, BoundaryDataStrategy
+│   │       │   └── index.ts           # Barrel re-export for data/
+│   │       ├── assertions/
+│   │       │   ├── assertion-generator.ts  # generateAssertions() — DomDiff → assertions
+│   │       │   ├── confidence.ts           # scoreConfidence(), filterByDepth()
+│   │       │   └── index.ts               # Barrel re-export for assertions/
+│   │       ├── ai/
+│   │       │   ├── edge-case-generator.ts  # generateEdgeCases() — AI edge case suggestions
+│   │       │   ├── provider.ts             # AiProvider interface, NoOpAiProvider
+│   │       │   ├── prompt.ts               # buildEdgeCasePrompt(), parseEdgeCaseResponse()
+│   │       │   └── index.ts               # Barrel re-export for ai/
+│   │       ├── emitter/
+│   │       │   ├── playwright-ts.ts        # PlaywrightTsEmitter — Playwright TypeScript output
+│   │       │   ├── json-emitter.ts         # JsonEmitter — Sentinel JSON output
+│   │       │   ├── suite-organizer.ts      # groupIntoSuites(), slugifySuiteName()
+│   │       │   └── index.ts               # Barrel re-export for emitter/
+│   │       ├── orchestrator/
+│   │       │   ├── generate.ts             # generate() — full pipeline orchestrator
+│   │       │   └── index.ts               # Barrel re-export for orchestrator/
+│   │       └── __tests__/
+│   │           ├── types.test.ts                  # Type structural tests
+│   │           ├── config.test.ts                 # Config validation unit tests
+│   │           ├── data-generator.test.ts         # Data generation unit tests
+│   │           ├── confidence.test.ts             # Confidence scoring unit tests
+│   │           ├── planner.test.ts                # Test planner unit tests
+│   │           ├── assertion-generator.test.ts    # Assertion generator unit tests
+│   │           ├── prompt.test.ts                 # AI prompt construction/parsing unit tests
+│   │           ├── edge-case-generator.test.ts    # Edge case generator unit tests
+│   │           ├── suite-organizer.test.ts        # Suite organizer unit tests
+│   │           ├── playwright-ts-emitter.test.ts  # Playwright TS emitter unit tests
+│   │           ├── json-emitter.test.ts           # JSON emitter unit tests
+│   │           └── generate.test.ts               # Pipeline orchestrator integration test
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared
@@ -225,7 +269,7 @@ Use `--no-verify` sparingly. Any bypass should be followed immediately by a lint
 
 ## Test Infrastructure
 
-- Vitest 4 is the test runner; the root `vitest.config.ts` defines all five packages as projects
+- Vitest 4 is the test runner; the root `vitest.config.ts` defines all workspace packages as projects
 - Vitest path aliases in `vitest.config.ts` resolve `@sentinel/*` imports to source files at test time (no build required)
 - Each package also has its own `vitest.config.ts` for running tests in isolation via `pnpm test` within that package
 - Tests live in `src/__tests__/` directories following the `*.test.ts` naming convention
