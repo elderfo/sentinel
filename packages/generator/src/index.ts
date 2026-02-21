@@ -40,3 +40,8 @@ export { generateTestData } from './data/index.js';
 export { RealisticDataStrategy, BoundaryDataStrategy } from './data/strategies.js';
 
 export { planTestCases } from './planner/index.js';
+
+export { NoOpAiProvider } from './ai/provider.js';
+export { buildEdgeCasePrompt, parseEdgeCaseResponse } from './ai/prompt.js';
+export type { EdgeCaseSuggestion } from './ai/prompt.js';
+export { generateEdgeCases } from './ai/edge-case-generator.js';
