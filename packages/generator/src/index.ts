@@ -1,0 +1,34 @@
+/**
+ * @sentinel/generator
+ *
+ * Test generation engine for the Sentinel QA platform.
+ * Transforms exploration results into executable test suites.
+ */
+
+export type {
+  TestType,
+  AssertionType,
+  TestAssertion,
+  TestStep,
+  TestCase,
+  TestSuite,
+  GenerationResult,
+  TestManifest,
+  ManifestEntry,
+  GenerationStats,
+  AssertionDepth,
+  DataStrategy,
+  OutputFormat,
+  AiConfig,
+  GeneratorConfig,
+  AiProviderRequest,
+  AiProviderResponse,
+  AiProvider,
+  EdgeCaseContext,
+  InvalidInput,
+  DataGeneratorStrategy,
+  EmittedFile,
+  TestEmitter,
+  GeneratorErrorCode,
+  GeneratorError,
+} from './types.js';

@@ -163,6 +163,12 @@ sentinel/
 │   │           ├── spa.test.ts        # SPA readiness unit tests (mocked BrowserEngine)
 │   │           ├── journey.test.ts    # Journey identification unit tests
 │   │           └── crawler.test.ts    # Crawler orchestrator unit tests (mocked BrowserEngine + analysis)
+│   ├── generator/        # @sentinel/generator — test generation engine (depends on shared + analysis + discovery)
+│   │   └── src/
+│   │       ├── index.ts          # Public API: all domain types re-exported from types.ts
+│   │       ├── types.ts          # All generator domain types: TestCase, TestSuite, GeneratorConfig, AiProvider, etc.
+│   │       └── __tests__/
+│   │           └── types.test.ts # Type structural tests for all generator types
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared
@@ -225,7 +231,7 @@ Use `--no-verify` sparingly. Any bypass should be followed immediately by a lint
 
 ## Test Infrastructure
 
-- Vitest 4 is the test runner; the root `vitest.config.ts` defines all five packages as projects
+- Vitest 4 is the test runner; the root `vitest.config.ts` defines all workspace packages as projects
 - Vitest path aliases in `vitest.config.ts` resolve `@sentinel/*` imports to source files at test time (no build required)
 - Each package also has its own `vitest.config.ts` for running tests in isolation via `pnpm test` within that package
 - Tests live in `src/__tests__/` directories following the `*.test.ts` naming convention
