@@ -5,6 +5,7 @@
     { "path": "./packages/core" },
     { "path": "./packages/browser" },
     { "path": "./packages/analysis" },
+    { "path": "./packages/discovery" },
     { "path": "./packages/cli" },
     { "path": "./packages/web" }
   ]

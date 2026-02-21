@@ -21,7 +21,8 @@
       "@sentinel/web": ["./packages/web/src/index.ts"],
       "@sentinel/shared": ["./packages/shared/src/index.ts"],
       "@sentinel/browser": ["./packages/browser/src/index.ts"],
-      "@sentinel/analysis": ["./packages/analysis/src/index.ts"]
+      "@sentinel/analysis": ["./packages/analysis/src/index.ts"],
+      "@sentinel/discovery": ["./packages/discovery/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "**/dist/**"]
