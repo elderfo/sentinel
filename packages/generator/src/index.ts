@@ -32,3 +32,5 @@ export type {
   GeneratorErrorCode,
   GeneratorError,
 } from './types.js';
+
+export { loadGeneratorConfig, validateConfig } from './config/index.js';
