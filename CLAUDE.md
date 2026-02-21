@@ -171,8 +171,9 @@ sentinel/
 │   │       │   ├── config.ts     # loadGeneratorConfig(), validateConfig() — config loading with defaults and validation
 │   │       │   └── index.ts      # Barrel re-export for config/
 │   │       ├── assertions/
-│   │       │   ├── confidence.ts # scoreConfidence() — scores state transitions; filterByDepth() — filters assertions by depth threshold
-│   │       │   └── index.ts      # Barrel re-export for assertions/
+│   │       │   ├── assertion-generator.ts # generateAssertions() — derives assertions from DOM diffs and URL changes per test step
+│   │       │   ├── confidence.ts          # scoreConfidence() — scores state transitions; filterByDepth() — filters assertions by depth threshold
+│   │       │   └── index.ts               # Barrel re-export for assertions/
 │   │       ├── data/
 │   │       │   ├── data-generator.ts # generateTestData() — produces test data from form fields using configurable strategies
 │   │       │   ├── strategies.ts     # RealisticDataStrategy, BoundaryDataStrategy — data generation strategies
@@ -183,9 +184,10 @@ sentinel/
 │   │       └── __tests__/
 │   │           ├── types.test.ts          # Type structural tests for all generator types
 │   │           ├── config.test.ts         # Unit tests for loadGeneratorConfig and validateConfig
-│   │           ├── confidence.test.ts     # Unit tests for scoreConfidence and filterByDepth
-│   │           ├── data-generator.test.ts # Unit tests for generateTestData and data strategies
-│   │           └── planner.test.ts        # Unit tests for planTestCases journey-to-testcase mapping
+│   │           ├── confidence.test.ts          # Unit tests for scoreConfidence and filterByDepth
+│   │           ├── assertion-generator.test.ts # Unit tests for generateAssertions DOM diff to assertion mapping
+│   │           ├── data-generator.test.ts      # Unit tests for generateTestData and data strategies
+│   │           └── planner.test.ts             # Unit tests for planTestCases journey-to-testcase mapping
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared
