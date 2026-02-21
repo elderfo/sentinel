@@ -119,6 +119,28 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
 
+  packages/generator:
+    dependencies:
+      '@sentinel/analysis':
+        specifier: workspace:*
+        version: link:../analysis
+      '@sentinel/discovery':
+        specifier: workspace:*
+        version: link:../discovery
+      '@sentinel/shared':
+        specifier: workspace:*
+        version: link:../shared
+      prettier:
+        specifier: ^3.5.0
+        version: 3.8.1
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.11
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
   packages/shared:
     devDependencies:
       '@types/node':
