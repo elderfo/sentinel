@@ -34,7 +34,9 @@ export type {
 } from './types.js';
 
 export { loadGeneratorConfig, validateConfig } from './config/index.js';
-export { scoreConfidence, filterByDepth } from './assertions/confidence.js';
+export { generateAssertions, scoreConfidence, filterByDepth } from './assertions/index.js';
 
 export { generateTestData } from './data/index.js';
 export { RealisticDataStrategy, BoundaryDataStrategy } from './data/strategies.js';
+
+export { planTestCases } from './planner/index.js';
