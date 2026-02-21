@@ -45,3 +45,9 @@ export { NoOpAiProvider } from './ai/provider.js';
 export { buildEdgeCasePrompt, parseEdgeCaseResponse } from './ai/prompt.js';
 export type { EdgeCaseSuggestion } from './ai/prompt.js';
 export { generateEdgeCases } from './ai/edge-case-generator.js';
+
+export { PlaywrightTsEmitter } from './emitter/playwright-ts.js';
+export { JsonEmitter } from './emitter/json-emitter.js';
+export { groupIntoSuites, slugifySuiteName } from './emitter/suite-organizer.js';
+
+export { generate } from './orchestrator/index.js';
