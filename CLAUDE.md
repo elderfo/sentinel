@@ -163,31 +163,50 @@ sentinel/
 │   │           ├── spa.test.ts        # SPA readiness unit tests (mocked BrowserEngine)
 │   │           ├── journey.test.ts    # Journey identification unit tests
 │   │           └── crawler.test.ts    # Crawler orchestrator unit tests (mocked BrowserEngine + analysis)
-│   ├── generator/        # @sentinel/generator — test generation engine (depends on shared + analysis + discovery)
+│   ├── generator/        # @sentinel/generator — test generation pipeline (depends on shared + analysis + discovery)
 │   │   └── src/
-│   │       ├── index.ts          # Public API: all domain types re-exported from types.ts, plus config and confidence functions
+│   │       ├── index.ts          # Public API: types, config, planner, data, assertions, ai, emitter, orchestrator
 │   │       ├── types.ts          # All generator domain types: TestCase, TestSuite, GeneratorConfig, AiProvider, etc.
 │   │       ├── config/
-│   │       │   ├── config.ts     # loadGeneratorConfig(), validateConfig() — config loading with defaults and validation
+│   │       │   ├── config.ts     # loadGeneratorConfig(), validateConfig()
 │   │       │   └── index.ts      # Barrel re-export for config/
-│   │       ├── assertions/
-│   │       │   ├── assertion-generator.ts # generateAssertions() — derives assertions from DOM diffs and URL changes per test step
-│   │       │   ├── confidence.ts          # scoreConfidence() — scores state transitions; filterByDepth() — filters assertions by depth threshold
-│   │       │   └── index.ts               # Barrel re-export for assertions/
-│   │       ├── data/
-│   │       │   ├── data-generator.ts # generateTestData() — produces test data from form fields using configurable strategies
-│   │       │   ├── strategies.ts     # RealisticDataStrategy, BoundaryDataStrategy — data generation strategies
-│   │       │   └── index.ts          # Barrel re-export for data/
 │   │       ├── planner/
-│   │       │   ├── planner.ts  # planTestCases() — maps UserJourneys to TestCases with setup/teardown steps
-│   │       │   └── index.ts    # Barrel re-export for planner/
+│   │       │   ├── planner.ts    # planTestCases() — journeys → TestCase outlines
+│   │       │   └── index.ts      # Barrel re-export for planner/
+│   │       ├── data/
+│   │       │   ├── data-generator.ts  # generateTestData() — fills form steps with valid/invalid data
+│   │       │   ├── strategies.ts      # RealisticDataStrategy, BoundaryDataStrategy
+│   │       │   └── index.ts           # Barrel re-export for data/
+│   │       ├── assertions/
+│   │       │   ├── assertion-generator.ts  # generateAssertions() — DomDiff → assertions
+│   │       │   ├── confidence.ts           # scoreConfidence(), filterByDepth()
+│   │       │   └── index.ts               # Barrel re-export for assertions/
+│   │       ├── ai/
+│   │       │   ├── edge-case-generator.ts  # generateEdgeCases() — AI edge case suggestions
+│   │       │   ├── provider.ts             # AiProvider interface, NoOpAiProvider
+│   │       │   ├── prompt.ts               # buildEdgeCasePrompt(), parseEdgeCaseResponse()
+│   │       │   └── index.ts               # Barrel re-export for ai/
+│   │       ├── emitter/
+│   │       │   ├── playwright-ts.ts        # PlaywrightTsEmitter — Playwright TypeScript output
+│   │       │   ├── json-emitter.ts         # JsonEmitter — Sentinel JSON output
+│   │       │   ├── suite-organizer.ts      # groupIntoSuites(), slugifySuiteName()
+│   │       │   └── index.ts               # Barrel re-export for emitter/
+│   │       ├── orchestrator/
+│   │       │   ├── generate.ts             # generate() — full pipeline orchestrator
+│   │       │   └── index.ts               # Barrel re-export for orchestrator/
 │   │       └── __tests__/
-│   │           ├── types.test.ts          # Type structural tests for all generator types
-│   │           ├── config.test.ts         # Unit tests for loadGeneratorConfig and validateConfig
-│   │           ├── confidence.test.ts          # Unit tests for scoreConfidence and filterByDepth
-│   │           ├── assertion-generator.test.ts # Unit tests for generateAssertions DOM diff to assertion mapping
-│   │           ├── data-generator.test.ts      # Unit tests for generateTestData and data strategies
-│   │           └── planner.test.ts             # Unit tests for planTestCases journey-to-testcase mapping
+│   │           ├── types.test.ts                  # Type structural tests
+│   │           ├── config.test.ts                 # Config validation unit tests
+│   │           ├── data-generator.test.ts         # Data generation unit tests
+│   │           ├── confidence.test.ts             # Confidence scoring unit tests
+│   │           ├── planner.test.ts                # Test planner unit tests
+│   │           ├── assertion-generator.test.ts    # Assertion generator unit tests
+│   │           ├── prompt.test.ts                 # AI prompt construction/parsing unit tests
+│   │           ├── edge-case-generator.test.ts    # Edge case generator unit tests
+│   │           ├── suite-organizer.test.ts        # Suite organizer unit tests
+│   │           ├── playwright-ts-emitter.test.ts  # Playwright TS emitter unit tests
+│   │           ├── json-emitter.test.ts           # JSON emitter unit tests
+│   │           └── generate.test.ts               # Pipeline orchestrator integration test
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared
