@@ -129,6 +129,40 @@ sentinel/
 │   │           ├── dynamic-id-detector.test.ts    # Dynamic ID detector unit tests
 │   │           ├── stability-analyzer.test.ts     # Stability analyzer unit tests
 │   │           └── extract.test.ts                # Browser extract adapter unit tests
+│   ├── discovery/        # @sentinel/discovery — autonomous web exploration engine (depends on shared + browser + analysis)
+│   │   └── src/
+│   │       ├── index.ts          # Public API: types, graph, cycle, scope, coverage, spa, journey, crawler
+│   │       ├── types.ts          # All discovery domain types: AppGraph, ExplorationConfig, CoverageMetrics, etc.
+│   │       ├── graph/
+│   │       │   ├── graph.ts      # createGraph, addNode, addEdge, findPaths, serialize/deserialize
+│   │       │   └── index.ts      # Barrel re-export for graph/
+│   │       ├── cycle/
+│   │       │   ├── url-normalizer.ts  # normalizeUrl() — strip tracking params, sort query, lowercase
+│   │       │   ├── cycle-detector.ts  # computeFingerprint, detectCycle, createCycleReport
+│   │       │   └── index.ts           # Barrel re-export for cycle/
+│   │       ├── scope/
+│   │       │   ├── scope-filter.ts    # isUrlAllowed, validateScopeConfig — URL boundary enforcement
+│   │       │   └── index.ts           # Barrel re-export for scope/
+│   │       ├── coverage/
+│   │       │   ├── coverage-calculator.ts  # calculateCoverage, checkThresholds
+│   │       │   └── index.ts               # Barrel re-export for coverage/
+│   │       ├── spa/
+│   │       │   ├── page-readiness.ts  # waitForPageReady, detectSpaNavigation — DOM stability polling
+│   │       │   └── index.ts           # Barrel re-export for spa/
+│   │       ├── journey/
+│   │       │   ├── journey-detector.ts  # identifyJourneys, classifyJourneyType, generateJourneyName
+│   │       │   └── index.ts             # Barrel re-export for journey/
+│   │       ├── crawler/
+│   │       │   ├── explorer.ts    # explore() — main orchestrator, serializeExplorationState, deserialize
+│   │       │   └── index.ts       # Barrel re-export for crawler/
+│   │       └── __tests__/
+│   │           ├── graph.test.ts      # Graph module unit tests
+│   │           ├── cycle.test.ts      # Cycle detection unit tests
+│   │           ├── scope.test.ts      # Scope enforcement unit tests
+│   │           ├── coverage.test.ts   # Coverage tracking unit tests
+│   │           ├── spa.test.ts        # SPA readiness unit tests (mocked BrowserEngine)
+│   │           ├── journey.test.ts    # Journey identification unit tests
+│   │           └── crawler.test.ts    # Crawler orchestrator unit tests (mocked BrowserEngine + analysis)
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared
