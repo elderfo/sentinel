@@ -165,14 +165,17 @@ sentinel/
 │   │           └── crawler.test.ts    # Crawler orchestrator unit tests (mocked BrowserEngine + analysis)
 │   ├── generator/        # @sentinel/generator — test generation engine (depends on shared + analysis + discovery)
 │   │   └── src/
-│   │       ├── index.ts          # Public API: all domain types re-exported from types.ts, plus config functions
+│   │       ├── index.ts          # Public API: all domain types re-exported from types.ts, plus config and confidence functions
 │   │       ├── types.ts          # All generator domain types: TestCase, TestSuite, GeneratorConfig, AiProvider, etc.
 │   │       ├── config/
 │   │       │   ├── config.ts     # loadGeneratorConfig(), validateConfig() — config loading with defaults and validation
 │   │       │   └── index.ts      # Barrel re-export for config/
+│   │       ├── assertions/
+│   │       │   └── confidence.ts # scoreConfidence() — scores state transitions; filterByDepth() — filters assertions by depth threshold
 │   │       └── __tests__/
-│   │           ├── types.test.ts  # Type structural tests for all generator types
-│   │           └── config.test.ts # Unit tests for loadGeneratorConfig and validateConfig
+│   │           ├── types.test.ts      # Type structural tests for all generator types
+│   │           ├── config.test.ts     # Unit tests for loadGeneratorConfig and validateConfig
+│   │           └── confidence.test.ts # Unit tests for scoreConfidence and filterByDepth
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared
