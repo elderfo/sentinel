@@ -59,7 +59,7 @@ export function parseEdgeCaseResponse(content: string): readonly EdgeCaseSuggest
     return [];
   }
 
-  return parsed.filter(isValidSuggestion) as readonly EdgeCaseSuggestion[];
+  return parsed.filter(isValidSuggestion);
 }
 
 // ---------------------------------------------------------------------------
@@ -77,7 +77,7 @@ function formatConstraint(c: EdgeCaseContext['formConstraints'][number]): string
   return `- ${parts.join(', ') || 'none'}`;
 }
 
-function isValidSuggestion(value: unknown): boolean {
+function isValidSuggestion(value: unknown): value is EdgeCaseSuggestion {
   if (typeof value !== 'object' || value === null) return false;
   const obj = value as Record<string, unknown>;
   if (typeof obj['name'] !== 'string') return false;
