@@ -101,7 +101,7 @@ describe('Runner types', () => {
       assertionType: 'visibility',
     };
     expectTypeOf(failure.expected).toBeString();
-    expectTypeOf(failure.assertionType).toBeString();
+    expectTypeOf(failure.assertionType).toExtend<string>();
   });
 
   it('TestError is structurally valid', () => {
