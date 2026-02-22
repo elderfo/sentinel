@@ -79,8 +79,14 @@ export async function run(
   }
 
   // 2. Check suites are non-empty
-  if (suites.length === 0 || !hasTestCases(suites)) {
+  if (suites.length === 0) {
     return { code: 'NO_TESTS_FOUND', message: 'No test suites provided' };
+  }
+  if (!hasTestCases(suites)) {
+    return {
+      code: 'NO_TESTS_FOUND',
+      message: 'No test cases found in provided suites',
+    };
   }
 
   // 3. Create Scheduler, enqueue suites, execute
@@ -103,14 +109,23 @@ export async function run(
     summary,
   };
 
-  // 6. Create reporters based on config.reportFormats and write all reports
-  const reporters = config.reportFormats.map(createReporter);
-  await Promise.all(reporters.map((reporter) => reporter.write(runResult, config.outputDir)));
+  // 6. Write reports (best-effort)
+  try {
+    const reporters = config.reportFormats.map(createReporter);
+    await Promise.all(reporters.map((reporter) => reporter.write(runResult, config.outputDir)));
+  } catch {
+    // Report generation failed — result is still valid
+  }
 
-  // 7. Persist to TrendStore
+  // 7. Persist to TrendStore (best-effort)
   const trendStore = new TrendStore(config.trendDbPath);
-  trendStore.persistRun(runResult);
-  trendStore.close();
+  try {
+    trendStore.persistRun(runResult);
+  } catch {
+    // Trend persistence failed — result is still valid
+  } finally {
+    trendStore.close();
+  }
 
   // 8. Return RunResult
   return runResult;

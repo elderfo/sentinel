@@ -207,7 +207,7 @@ describe('run', () => {
 
     expect(isRunnerError(result)).toBe(true);
     expect(result).toHaveProperty('code', 'NO_TESTS_FOUND');
-    expect(result).toHaveProperty('message', 'No test suites provided');
+    expect(result).toHaveProperty('message', 'No test cases found in provided suites');
   });
 
   it('executes the full pipeline: scheduler -> collect results -> build summary -> write reports -> persist trends', async () => {
@@ -359,5 +359,45 @@ describe('run', () => {
     expect(Scheduler).not.toHaveBeenCalled();
     expect(JsonReporter).not.toHaveBeenCalled();
     expect(TrendStore).not.toHaveBeenCalled();
+  });
+
+  // -------------------------------------------------------------------------
+  // Error resilience: reporters and TrendStore
+  // -------------------------------------------------------------------------
+
+  it('returns valid RunResult when a reporter write() rejects', async () => {
+    mockJsonReporterInstance.write.mockRejectedValue(new Error('disk full'));
+
+    const result = await run(validConfig, [makeSuite()]);
+
+    expect(isRunnerError(result)).toBe(false);
+    if (isRunnerError(result)) return;
+
+    expect(result.summary.total).toBe(4);
+    expect(result.runId).toBeDefined();
+  });
+
+  it('returns valid RunResult when TrendStore.persistRun() throws', async () => {
+    mockTrendStoreInstance.persistRun.mockImplementation(() => {
+      throw new Error('db locked');
+    });
+
+    const result = await run(validConfig, [makeSuite()]);
+
+    expect(isRunnerError(result)).toBe(false);
+    if (isRunnerError(result)) return;
+
+    expect(result.summary.total).toBe(4);
+    expect(result.runId).toBeDefined();
+  });
+
+  it('calls TrendStore.close() even when persistRun() throws', async () => {
+    mockTrendStoreInstance.persistRun.mockImplementation(() => {
+      throw new Error('db locked');
+    });
+
+    await run(validConfig, [makeSuite()]);
+
+    expect(mockTrendStoreInstance.close).toHaveBeenCalled();
   });
 });
