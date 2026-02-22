@@ -25,3 +25,5 @@ export type {
 } from './types.js';
 
 export { RUNNER_VERSION } from './types.js';
+
+export { loadRunnerConfig, validateRunnerConfig } from './config/index.js';
