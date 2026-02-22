@@ -85,12 +85,24 @@ export async function handleWorkerMessage(message: WorkerMessage, send: SendFn):
   } finally {
     // Clean up in reverse order: page -> context -> engine
     if (pageHandle !== undefined) {
-      await engine.closePage(pageHandle);
+      try {
+        await engine.closePage(pageHandle);
+      } catch {
+        /* cleanup failure */
+      }
     }
     if (contextHandle !== undefined) {
-      await engine.closeContext(contextHandle);
+      try {
+        await engine.closeContext(contextHandle);
+      } catch {
+        /* cleanup failure */
+      }
     }
-    await engine.close();
+    try {
+      await engine.close();
+    } catch {
+      /* cleanup failure */
+    }
   }
 }
 
@@ -101,6 +113,11 @@ export async function handleWorkerMessage(message: WorkerMessage, send: SendFn):
 if (process.send !== undefined) {
   const send = process.send.bind(process) as SendFn;
   process.on('message', (msg: WorkerMessage) => {
-    void handleWorkerMessage(msg, send);
+    handleWorkerMessage(msg, send).catch((err: unknown) => {
+      send({
+        type: 'error',
+        error: err instanceof Error ? err.message : 'Unhandled worker error',
+      });
+    });
   });
 }
