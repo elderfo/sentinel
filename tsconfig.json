@@ -23,7 +23,8 @@
       "@sentinel/browser": ["./packages/browser/src/index.ts"],
       "@sentinel/analysis": ["./packages/analysis/src/index.ts"],
       "@sentinel/discovery": ["./packages/discovery/src/index.ts"],
-      "@sentinel/generator": ["./packages/generator/src/index.ts"]
+      "@sentinel/generator": ["./packages/generator/src/index.ts"],
+      "@sentinel/runner": ["./packages/runner/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "**/dist/**"]
