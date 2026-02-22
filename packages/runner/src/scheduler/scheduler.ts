@@ -18,6 +18,7 @@ export class Scheduler {
   private readonly config: RunnerConfig;
   private readonly queue: WorkQueue;
   private readonly attemptCounts: Map<string, number> = new Map();
+  private readonly crashCounts: Map<string, number> = new Map();
 
   constructor(config: RunnerConfig) {
     this.config = config;
@@ -42,6 +43,9 @@ export class Scheduler {
     if (this.queue.isEmpty) {
       return [];
     }
+
+    this.attemptCounts.clear();
+    this.crashCounts.clear();
 
     return new Promise<TestResult[]>((resolve) => {
       const results: TestResult[] = [];
@@ -84,7 +88,15 @@ export class Scheduler {
           testCase,
           config: this.config,
         };
-        workerEntry.process.send(msg);
+
+        try {
+          workerEntry.process.send(msg);
+        } catch {
+          // IPC channel already destroyed — re-queue the test and mark worker idle
+          this.queue.requeue(testCase);
+          workerEntry.currentTestCase = undefined;
+          tryComplete();
+        }
       };
 
       const handleResult = (workerEntry: WorkerEntry, result: TestResult): void => {
@@ -104,11 +116,8 @@ export class Scheduler {
         } else {
           // Final result: adjust status and retryCount based on attempts
           const retryCount = attempt;
-          let finalStatus: TestStatus = result.status;
-
-          if (result.status === 'passed' && retryCount > 0) {
-            finalStatus = 'passed-with-retry';
-          }
+          const finalStatus: TestStatus =
+            result.status === 'passed' && retryCount > 0 ? 'passed-with-retry' : result.status;
 
           const finalResult: TestResult = {
             ...result,
@@ -190,12 +199,39 @@ export class Scheduler {
             return;
           }
 
-          // If the worker was processing a test, re-queue it
+          // If the worker was processing a test, re-queue it (unless crash limit reached)
           const testCase = workerEntry.currentTestCase;
           workers.delete(pid);
 
           if (testCase !== undefined) {
-            this.queue.requeue(testCase);
+            const crashes = (this.crashCounts.get(testCase.id) ?? 0) + 1;
+            this.crashCounts.set(testCase.id, crashes);
+
+            const maxCrashes = this.config.retries + 1;
+            if (crashes > maxCrashes) {
+              // Crash limit exceeded — record as failed
+              const attempt = this.attemptCounts.get(testCase.id) ?? 0;
+              const failedResult: TestResult = {
+                testId: testCase.id,
+                testName: testCase.name,
+                suite: testCase.suite,
+                status: 'failed',
+                duration: 0,
+                retryCount: attempt,
+                error: {
+                  message: `Worker crashed ${String(crashes)} times for test "${testCase.name}"`,
+                  stack: '',
+                  consoleErrors: [],
+                  failedNetworkRequests: [],
+                },
+                artifacts: {
+                  artifactDir: join(this.config.outputDir, testCase.suite, testCase.id),
+                },
+              };
+              results.push(failedResult);
+            } else {
+              this.queue.requeue(testCase);
+            }
           }
 
           // Fork a replacement worker

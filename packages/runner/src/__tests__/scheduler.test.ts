@@ -573,5 +573,102 @@ describe('Scheduler', () => {
       const result = defined(results[0], 'results[0]');
       expect(result.status).toBe('passed');
     });
+
+    it('fails a test after exceeding crash limit instead of re-queuing indefinitely', async () => {
+      // retries: 1 => maxCrashes = retries + 1 = 2
+      // Crashes 1 and 2 re-queue; crash 3 exceeds the limit and records failure
+      const config = { ...baseConfig, workers: 1, retries: 1 };
+      const scheduler = new Scheduler(config);
+      const tc = makeTestCase({ id: 'tc-crash-loop', name: 'Crash loop test' });
+      scheduler.enqueue([{ name: 'auth', fileName: 'auth.test.ts', testCases: [tc] }]);
+
+      const promise = scheduler.execute();
+
+      // Crash 1 — within limit, re-queued
+      await vi.waitFor(() => {
+        expect(mockChildren.length).toBe(1);
+      });
+      const child1 = defined(mockChildren[0], 'mockChildren[0]');
+      await vi.waitFor(() => {
+        expect(child1.send).toHaveBeenCalled();
+      });
+      child1.connected = false;
+      child1.emit('exit', 1, null);
+
+      // Crash 2 — within limit, re-queued
+      await vi.waitFor(() => {
+        expect(mockChildren.length).toBe(2);
+      });
+      const child2 = defined(mockChildren[1], 'mockChildren[1]');
+      await vi.waitFor(() => {
+        expect(child2.send).toHaveBeenCalled();
+      });
+      child2.connected = false;
+      child2.emit('exit', 1, null);
+
+      // Crash 3 — exceeds maxCrashes (2), records failure
+      await vi.waitFor(() => {
+        expect(mockChildren.length).toBe(3);
+      });
+      const child3 = defined(mockChildren[2], 'mockChildren[2]');
+      await vi.waitFor(() => {
+        expect(child3.send).toHaveBeenCalled();
+      });
+      child3.connected = false;
+      child3.emit('exit', 1, null);
+
+      // The 4th replacement worker should have nothing to do (test was recorded as failed)
+      await vi.waitFor(() => {
+        expect(mockChildren.length).toBe(4);
+      });
+
+      const results = await promise;
+      expect(results).toHaveLength(1);
+      const result = defined(results[0], 'results[0]');
+      expect(result.status).toBe('failed');
+      expect(result.testId).toBe('tc-crash-loop');
+      expect(result.error?.message).toContain('Worker crashed');
+      expect(result.error?.message).toContain('3 times');
+    });
+
+    it('re-queues test on IPC send failure and completes gracefully', async () => {
+      const scheduler = new Scheduler({ ...baseConfig, workers: 1 });
+      const tc = makeTestCase({ id: 'tc-ipc-fail' });
+      scheduler.enqueue([{ name: 'auth', fileName: 'auth.test.ts', testCases: [tc] }]);
+
+      const promise = scheduler.execute();
+
+      await vi.waitFor(() => {
+        expect(mockChildren.length).toBe(1);
+      });
+
+      const child1 = defined(mockChildren[0], 'mockChildren[0]');
+      // First send throws — simulates destroyed IPC channel
+      child1.send.mockImplementationOnce(() => {
+        throw new Error('channel closed');
+      });
+
+      // The test should be re-queued after the IPC failure.
+      // A replacement worker won't be spawned (the child didn't exit), but the test
+      // is still in the queue. Since the worker is now idle, tryComplete won't resolve.
+      // The worker exit event will trigger a replacement.
+      // Simulate the worker exiting (it's broken anyway).
+      child1.emit('exit', 1, null);
+
+      // Replacement worker picks up the re-queued test
+      await vi.waitFor(() => {
+        expect(mockChildren.length).toBe(2);
+      });
+      const child2 = defined(mockChildren[1], 'mockChildren[1]');
+      await vi.waitFor(() => {
+        expect(child2.send).toHaveBeenCalled();
+      });
+
+      child2.emit('message', { type: 'result', result: makePassedResult(tc) });
+
+      const results = await promise;
+      expect(results).toHaveLength(1);
+      expect(defined(results[0], 'results[0]').status).toBe('passed');
+    });
   });
 });
