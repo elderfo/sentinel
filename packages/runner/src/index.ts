@@ -27,3 +27,5 @@ export type {
 export { RUNNER_VERSION } from './types.js';
 
 export { loadRunnerConfig, validateRunnerConfig } from './config/index.js';
+
+export { loadTestSuites } from './loader/index.js';
