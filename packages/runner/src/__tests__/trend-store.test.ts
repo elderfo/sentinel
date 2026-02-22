@@ -226,8 +226,27 @@ describe('TrendStore', () => {
     const lines = csv.split('\n');
     expect(lines[0]).toBe('test_id,test_name,suite,pass_rate,avg_duration,is_flaky,run_count');
     expect(lines).toHaveLength(2); // header + 1 data row
-    expect(lines[1]).toContain('tc-1');
-    expect(lines[1]).toContain('Test 1');
-    expect(lines[1]).toContain('auth');
+    expect(lines[1]).toContain('"tc-1"');
+    expect(lines[1]).toContain('"Test 1"');
+    expect(lines[1]).toContain('"auth"');
+  });
+
+  it('exportCsv escapes special characters in field values', () => {
+    store.persistRun(
+      makeRunResult('run-1', [
+        {
+          testId: 'tc-1',
+          testName: 'Test with "quotes" and, commas',
+          suite: '=SUM(A1)',
+          status: 'passed',
+          duration: 100,
+        },
+      ]),
+    );
+
+    const csv = store.exportCsv();
+    const lines = csv.split('\n');
+    expect(lines[1]).toContain('"Test with ""quotes"" and, commas"');
+    expect(lines[1]).toContain('"=SUM(A1)"');
   });
 });

@@ -2,6 +2,11 @@ import Database from 'better-sqlite3';
 import { runMigrations } from './migrations.js';
 import type { RunResult, TrendReport } from '../types.js';
 
+function escapeCsv(value: string): string {
+  const escaped = value.replace(/"/g, '""');
+  return `"${escaped}"`;
+}
+
 export class TrendStore {
   private readonly db: Database.Database;
 
@@ -108,7 +113,7 @@ export class TrendStore {
     const header = 'test_id,test_name,suite,pass_rate,avg_duration,is_flaky,run_count';
     const rows = trends.map(
       (t) =>
-        `${t.testId},${t.testName},${t.suite},${t.passRate.toFixed(2)},${String(t.avgDuration)},${String(t.isFlaky)},${String(t.runCount)}`,
+        `${escapeCsv(t.testId)},${escapeCsv(t.testName)},${escapeCsv(t.suite)},${t.passRate.toFixed(2)},${String(t.avgDuration)},${String(t.isFlaky)},${String(t.runCount)}`,
     );
     return [header, ...rows].join('\n');
   }
