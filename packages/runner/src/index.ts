@@ -29,3 +29,14 @@ export { RUNNER_VERSION } from './types.js';
 export { loadRunnerConfig, validateRunnerConfig } from './config/index.js';
 
 export { loadTestSuites } from './loader/index.js';
+
+// Reporters
+export { JsonReporter } from './reporter/json-reporter.js';
+export { JunitReporter } from './reporter/junit-reporter.js';
+export { HtmlReporter } from './reporter/html-reporter.js';
+
+// Trends
+export { TrendStore } from './trends/index.js';
+
+// Orchestrator
+export { run } from './orchestrator/index.js';

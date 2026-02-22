@@ -209,8 +209,49 @@ sentinel/
 │   │           └── generate.test.ts               # Pipeline orchestrator integration test
 │   ├── runner/           # @sentinel/runner — test execution engine (depends on shared + browser + generator)
 │   │   └── src/
-│   │       ├── index.ts          # Public API: RUNNER_VERSION (stub)
-│   │       └── types.ts          # RUNNER_VERSION constant
+│   │       ├── index.ts          # Public API: types, config, loader, reporters, trends, orchestrator
+│   │       ├── types.ts          # All runner domain types: RunnerConfig, TestResult, RunResult, WorkerMessage, TrendEntry, etc.
+│   │       ├── config/
+│   │       │   ├── config.ts     # loadRunnerConfig(), validateRunnerConfig() — defaults and validation
+│   │       │   └── index.ts      # Barrel re-export for config/
+│   │       ├── loader/
+│   │       │   ├── loader.ts     # loadTestSuites() — reads JSON test files from directory into TestSuite[]
+│   │       │   └── index.ts      # Barrel re-export for loader/
+│   │       ├── scheduler/
+│   │       │   ├── work-queue.ts # WorkQueue class — FIFO queue for TestCase distribution
+│   │       │   ├── scheduler.ts  # Scheduler class — forks worker processes, distributes work, retry logic
+│   │       │   └── index.ts      # Barrel re-export for scheduler/
+│   │       ├── worker/
+│   │       │   ├── test-executor.ts    # executeTest() — runs a single TestCase via BrowserEngine
+│   │       │   ├── artifact-collector.ts # ArtifactCollector — screenshots, console logs, artifact dirs
+│   │       │   ├── worker-process.ts   # Child process entry point — IPC message handler
+│   │       │   └── index.ts            # Barrel re-export for worker/ (executeTest, ArtifactCollector)
+│   │       ├── reporter/
+│   │       │   ├── json-reporter.ts  # JsonReporter — writes sentinel-report.json
+│   │       │   ├── junit-reporter.ts # JunitReporter — writes sentinel-report.xml (JUnit format)
+│   │       │   ├── html-reporter.ts  # HtmlReporter — writes sentinel-report.html with inline CSS
+│   │       │   └── index.ts          # Barrel re-export for reporter/
+│   │       ├── trends/
+│   │       │   ├── migrations.ts   # runMigrations() — creates runs and test_results SQLite tables
+│   │       │   ├── trend-store.ts  # TrendStore class — SQLite persistence, flaky detection, CSV export
+│   │       │   └── index.ts        # Barrel re-export for trends/
+│   │       ├── orchestrator/
+│   │       │   ├── run.ts          # run() — top-level pipeline: validate → schedule → report → persist
+│   │       │   └── index.ts        # Barrel re-export for orchestrator/
+│   │       └── __tests__/
+│   │           ├── types.test.ts              # Type structural tests
+│   │           ├── config.test.ts             # Config loading/validation unit tests
+│   │           ├── loader.test.ts             # Loader unit tests (mocked fs)
+│   │           ├── work-queue.test.ts         # Work queue operation tests
+│   │           ├── artifact-collector.test.ts # Artifact collector tests (mocked BrowserEngine/fs)
+│   │           ├── test-executor.test.ts      # Test executor tests (mocked BrowserEngine)
+│   │           ├── worker-process.test.ts     # Worker process IPC handler tests
+│   │           ├── scheduler.test.ts          # Scheduler tests (mocked child_process)
+│   │           ├── json-reporter.test.ts      # JSON reporter tests (mocked fs)
+│   │           ├── junit-reporter.test.ts     # JUnit reporter tests (mocked fs)
+│   │           ├── html-reporter.test.ts      # HTML reporter tests (mocked fs)
+│   │           ├── trend-store.test.ts        # Trend store tests (in-memory SQLite)
+│   │           └── run.test.ts                # Run orchestrator tests (mocked scheduler/reporters/trends)
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared
