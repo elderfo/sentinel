@@ -207,6 +207,10 @@ sentinel/
 │   │           ├── playwright-ts-emitter.test.ts  # Playwright TS emitter unit tests
 │   │           ├── json-emitter.test.ts           # JSON emitter unit tests
 │   │           └── generate.test.ts               # Pipeline orchestrator integration test
+│   ├── runner/           # @sentinel/runner — test execution engine (depends on shared + browser + generator)
+│   │   └── src/
+│   │       ├── index.ts          # Public API: RUNNER_VERSION (stub)
+│   │       └── types.ts          # RUNNER_VERSION constant
 │   ├── cli/              # @sentinel/cli — command-line interface entry point
 │   │   └── src/
 │   │       ├── index.ts          # Public API: CLI_NAME, re-exports from core/shared
