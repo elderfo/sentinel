@@ -39,9 +39,10 @@ async function evaluateAssertion(
       }
     }
     case 'text-content': {
+      const sel = JSON.stringify(assertion.selector);
       const text = await engine.evaluate<string>(
         pageHandle,
-        `document.querySelector('${assertion.selector}')?.textContent ?? ''`,
+        `document.querySelector(${sel})?.textContent ?? ''`,
       );
       return { passed: text === assertion.expected, actual: text };
     }
@@ -50,17 +51,19 @@ async function evaluateAssertion(
       return { passed: url.includes(assertion.expected), actual: url };
     }
     case 'element-count': {
+      const sel = JSON.stringify(assertion.selector);
       const count = await engine.evaluate<number>(
         pageHandle,
-        `document.querySelectorAll('${assertion.selector}').length`,
+        `document.querySelectorAll(${sel}).length`,
       );
       const countStr = String(count);
       return { passed: countStr === assertion.expected, actual: countStr };
     }
     case 'attribute-value': {
+      const sel = JSON.stringify(assertion.selector);
       const value = await engine.evaluate<string>(
         pageHandle,
-        `document.querySelector('${assertion.selector}')?.getAttribute('value') ?? ''`,
+        `document.querySelector(${sel})?.getAttribute('value') ?? ''`,
       );
       return { passed: value === assertion.expected, actual: value };
     }

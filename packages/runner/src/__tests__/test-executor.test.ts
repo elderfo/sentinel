@@ -326,7 +326,7 @@ describe('executeTest', () => {
 
     expect(evaluateFn).toHaveBeenCalledWith(
       PAGE_HANDLE,
-      "document.querySelector('#greeting')?.textContent ?? ''",
+      'document.querySelector("#greeting")?.textContent ?? \'\'',
     );
     expect(result.status).toBe('passed');
   });
