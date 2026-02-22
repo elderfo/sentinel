@@ -14,6 +14,7 @@ export default defineConfig({
       '@sentinel/analysis': resolve(root, 'packages/analysis/src/index.ts'),
       '@sentinel/discovery': resolve(root, 'packages/discovery/src/index.ts'),
       '@sentinel/generator': resolve(root, 'packages/generator/src/index.ts'),
+      '@sentinel/runner': resolve(root, 'packages/runner/src/index.ts'),
     },
   },
   test: {
@@ -84,6 +85,13 @@ export default defineConfig({
         test: {
           name: '@sentinel/generator',
           include: ['packages/generator/src/**/*.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: '@sentinel/runner',
+          include: ['packages/runner/src/**/*.test.ts'],
         },
       },
     ],
